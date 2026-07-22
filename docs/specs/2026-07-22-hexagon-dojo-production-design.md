@@ -9,12 +9,12 @@ Ship the prototype as a production web app: public GitHub repo (`PaulCailly/hexa
 
 ## Decisions (from brainstorm)
 
-| Topic | Decision |
-|---|---|
+| Topic      | Decision                                                             |
+| ---------- | -------------------------------------------------------------------- |
 | Visibility | Public repo, **de-branded** content (Joko/CoderPad refs generalized) |
-| Tailwind | v4 via `@tailwindcss/vite` plugin, CSS-first config |
-| Language | TypeScript (TSX modules, typed content) |
-| gatekit | Report-only mode |
+| Tailwind   | v4 via `@tailwindcss/vite` plugin, CSS-first config                  |
+| Language   | TypeScript (TSX modules, typed content)                              |
+| gatekit    | Report-only mode                                                     |
 
 ## Stack
 

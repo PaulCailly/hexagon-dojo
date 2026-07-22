@@ -6,7 +6,8 @@ export function judgmentScore(
 }
 
 export function quizVerdict(score: number): string {
-  if (score >= 10) return "Interview-ready on the concepts. Move to the missions.";
+  if (score >= 10)
+    return "Interview-ready on the concepts. Move to the missions.";
   if (score >= 7)
     return "Solid base. Re-run it and read the explanations you missed.";
   return "Re-read the guide, then run the quiz again.";

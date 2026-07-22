@@ -73,7 +73,9 @@ export default function DrillModule() {
         </Tag>
         <Tag color="slate">Score {score}</Tag>
       </div>
-      <p className="text-sm text-slate-400 mb-2">Where does this line belong?</p>
+      <p className="text-sm text-slate-400 mb-2">
+        Where does this line belong?
+      </p>
       <Code>{item.code}</Code>
       <div className="grid grid-cols-1 min-[360px]:grid-cols-2 gap-2 mt-4">
         {DRILL_OPTIONS.map((opt) => {

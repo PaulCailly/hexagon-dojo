@@ -17,10 +17,7 @@ const scrollToTop = () => {
 export default function BookModule() {
   const navigate = useNavigate();
   const { chapter } = useParams();
-  const ch = Math.min(
-    Math.max((Number(chapter) || 1) - 1, 0),
-    BOOK.length - 1,
-  );
+  const ch = Math.min(Math.max((Number(chapter) || 1) - 1, 0), BOOK.length - 1);
   const [read, setRead] = useState<Set<number>>(
     () => new Set(loadProgress().readChapters),
   );

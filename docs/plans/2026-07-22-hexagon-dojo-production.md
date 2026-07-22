@@ -23,10 +23,12 @@
 ### Task 1: Scaffold — Vite + TS + Tailwind v4 + fonts + meta
 
 **Files:**
+
 - Create: `package.json`, `vite.config.ts`, `tsconfig.json`, `index.html`, `src/main.tsx`, `src/index.css`, `src/App.tsx` (placeholder), `public/favicon.svg`, `.gitignore`
 - Copy prototype dir first: `cp -R ~/Downloads/hexagon-dojo ~/hexagon-dojo/prototype-reference` is NOT done — reference it in place; repo must not contain the prototype.
 
 **Interfaces:**
+
 - Produces: working `npm run dev` / `npm run build`; CSS custom props `--font-sans`, `--font-mono`; `.font-mono` utility from Tailwind.
 
 - [ ] **Step 1: Scaffold**
@@ -41,6 +43,7 @@ npm i -D @tailwindcss/vite tailwindcss
 - [ ] **Step 2: Configs**
 
 `vite.config.ts`:
+
 ```ts
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
@@ -52,6 +55,7 @@ export default defineConfig({
 ```
 
 `src/index.css`:
+
 ```css
 @import "tailwindcss";
 
@@ -66,6 +70,7 @@ body {
 ```
 
 `src/main.tsx`:
+
 ```tsx
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
@@ -84,11 +89,12 @@ createRoot(document.getElementById("root")!).render(
     <BrowserRouter>
       <App />
     </BrowserRouter>
-  </StrictMode>
+  </StrictMode>,
 );
 ```
 
 `index.html` (full file — note de-brand edit #1 and meta/og per brief §2.1):
+
 ```html
 <!doctype html>
 <html lang="en">
@@ -99,9 +105,15 @@ createRoot(document.getElementById("root")!).render(
     <meta name="color-scheme" content="dark" />
     <meta name="theme-color" content="#020617" />
     <title>Hexagon Dojo — ports, adapters & dependency injection trainer</title>
-    <meta name="description" content="Interactive dojo for hexagonal architecture: a 12-chapter book, quizzes, code-review missions, classification drills, testing missions and interview talk tracks." />
+    <meta
+      name="description"
+      content="Interactive dojo for hexagonal architecture: a 12-chapter book, quizzes, code-review missions, classification drills, testing missions and interview talk tracks."
+    />
     <meta property="og:title" content="Hexagon Dojo" />
-    <meta property="og:description" content="Train ports, adapters and dependency injection: book, quiz, code review missions, drills and talk tracks." />
+    <meta
+      property="og:description"
+      content="Train ports, adapters and dependency injection: book, quiz, code review missions, drills and talk tracks."
+    />
     <meta property="og:type" content="website" />
   </head>
   <body>
@@ -112,6 +124,7 @@ createRoot(document.getElementById("root")!).render(
 ```
 
 `public/favicon.svg`:
+
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
   <polygon points="25,3 75,3 100,50 75,97 25,97 0,50" fill="#0e7490"/>
@@ -132,11 +145,14 @@ Run: `npm run build && npm run dev -- --port 5199 &` → build clean, page rende
 ### Task 2: Storage module (TDD)
 
 **Files:**
+
 - Create: `src/lib/storage.ts`, `src/lib/storage.test.ts`
 - Modify: `package.json` (vitest), Create: `vitest.config.ts` (or merge into vite config — use separate `vitest.config.ts` extending vite config).
 
 **Interfaces:**
+
 - Produces:
+
 ```ts
 export interface Progress {
   readChapters: number[];
@@ -147,9 +163,9 @@ export interface Progress {
 }
 export const STORAGE_KEY = "hexagon-dojo:v1";
 export const emptyProgress: () => Progress;
-export function loadProgress(): Progress;            // corrupt/missing → emptyProgress()
-export function saveProgress(patch: Partial<Progress>): void;  // merge + persist, swallows quota errors
-export function resetProgress(): void;               // removeItem, swallows errors
+export function loadProgress(): Progress; // corrupt/missing → emptyProgress()
+export function saveProgress(patch: Partial<Progress>): void; // merge + persist, swallows quota errors
+export function resetProgress(): void; // removeItem, swallows errors
 ```
 
 - [ ] **Step 1: Install test stack**
@@ -159,17 +175,21 @@ npm i -D vitest @testing-library/react @testing-library/user-event @testing-libr
 ```
 
 `vitest.config.ts`:
+
 ```ts
 import { defineConfig, mergeConfig } from "vitest/config";
 import viteConfig from "./vite.config";
 
-export default mergeConfig(viteConfig, defineConfig({
-  test: {
-    environment: "jsdom",
-    globals: true,
-    setupFiles: ["./src/test/setup.ts"],
-  },
-}));
+export default mergeConfig(
+  viteConfig,
+  defineConfig({
+    test: {
+      environment: "jsdom",
+      globals: true,
+      setupFiles: ["./src/test/setup.ts"],
+    },
+  }),
+);
 ```
 
 `src/test/setup.ts`: `import "@testing-library/jest-dom/vitest";`
@@ -179,7 +199,13 @@ Add scripts: `"test": "vitest run", "test:watch": "vitest"`.
 
 ```ts
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { STORAGE_KEY, emptyProgress, loadProgress, saveProgress, resetProgress } from "./storage";
+import {
+  STORAGE_KEY,
+  emptyProgress,
+  loadProgress,
+  saveProgress,
+  resetProgress,
+} from "./storage";
 
 describe("storage", () => {
   beforeEach(() => localStorage.clear());
@@ -190,7 +216,11 @@ describe("storage", () => {
 
   it("round-trips a partial save merged over defaults", () => {
     saveProgress({ quizBest: 10, readChapters: [0, 2] });
-    expect(loadProgress()).toEqual({ ...emptyProgress(), quizBest: 10, readChapters: [0, 2] });
+    expect(loadProgress()).toEqual({
+      ...emptyProgress(),
+      quizBest: 10,
+      readChapters: [0, 2],
+    });
   });
 
   it("merges successive saves", () => {
@@ -205,7 +235,11 @@ describe("storage", () => {
   });
 
   it("survives setItem throwing (quota/private mode)", () => {
-    const spy = vi.spyOn(Storage.prototype, "setItem").mockImplementation(() => { throw new Error("quota"); });
+    const spy = vi
+      .spyOn(Storage.prototype, "setItem")
+      .mockImplementation(() => {
+        throw new Error("quota");
+      });
     expect(() => saveProgress({ quizBest: 1 })).not.toThrow();
     spy.mockRestore();
   });
@@ -253,7 +287,10 @@ export function loadProgress(): Progress {
 
 export function saveProgress(patch: Partial<Progress>): void {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify({ ...loadProgress(), ...patch }));
+    localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify({ ...loadProgress(), ...patch }),
+    );
   } catch {
     // storage unavailable (quota, private mode) — progress is best-effort
   }
@@ -276,26 +313,55 @@ export function resetProgress(): void {
 ### Task 3: Content modules (typed, de-branded)
 
 **Files:**
+
 - Create: `src/content/types.ts`, `src/content/book.ts`, `src/content/quiz.ts`, `src/content/reviews.ts`, `src/content/drill.ts`, `src/content/testing.ts`, `src/content/cards.ts`, `src/content/content.test.ts`
 
 **Interfaces:**
+
 - Produces (consumed by all modules):
 
 ```ts
 // types.ts
 export type TagColor = "cyan" | "amber" | "violet" | "emerald" | "slate";
-export interface QuizQuestion { q: string; options: string[]; answer: number; why: string; }
-export interface ReviewIssue { text: string; correct: boolean; why: string; }
-export interface ReviewMission { title: string; intro: string; code: string; issues: ReviewIssue[]; fix: string; }
-export interface DrillItem { code: string; answer: DrillAnswer; why: string; }
+export interface QuizQuestion {
+  q: string;
+  options: string[];
+  answer: number;
+  why: string;
+}
+export interface ReviewIssue {
+  text: string;
+  correct: boolean;
+  why: string;
+}
+export interface ReviewMission {
+  title: string;
+  intro: string;
+  code: string;
+  issues: ReviewIssue[];
+  fix: string;
+}
+export interface DrillItem {
+  code: string;
+  answer: DrillAnswer;
+  why: string;
+}
 export type DrillAnswer = "Port" | "Adapter" | "Use case" | "Composition root";
-export interface TalkCard { cat: string; color: TagColor; q: string; a: string; }
+export interface TalkCard {
+  cat: string;
+  color: TagColor;
+  q: string;
+  a: string;
+}
 export type BookBlock =
   | { t: "p"; c: string }
   | { t: "code"; c: string }
   | { t: "take"; c: string }
   | { t: "li"; c: string[] };
-export interface BookChapter { title: string; blocks: BookBlock[]; }
+export interface BookChapter {
+  title: string;
+  blocks: BookBlock[];
+}
 ```
 
 - Exports: `QUIZ: QuizQuestion[]` (quiz.ts), `REVIEWS: ReviewMission[]` (reviews.ts), `DRILL: DrillItem[]`, `DRILL_OPTIONS: DrillAnswer[]`, `DRILL_COLORS: Record<DrillAnswer, TagColor>` (drill.ts), `TEST_CHECKLIST: string[]`, `TEST_SOLUTION: string` (testing.ts), `CARDS: TalkCard[]` (cards.ts), `BOOK: BookChapter[]` (book.ts).
@@ -355,18 +421,24 @@ Note: BOOK is 12 chapters and CARDS is 12 cards in the prototype — verify coun
 ### Task 4: Shared components + scoring helpers (TDD on helpers)
 
 **Files:**
+
 - Create: `src/components/Hex.tsx`, `src/components/Code.tsx`, `src/components/Tag.tsx`, `src/components/ErrorBoundary.tsx`, `src/lib/scoring.ts`, `src/lib/scoring.test.ts`
 
 **Interfaces:**
+
 - Produces:
+
 ```ts
 // Hex: ({ children, className?, style? }) — prototype L11-22 verbatim, typed (React.CSSProperties)
 // Code: ({ children }) — prototype L24-28 verbatim
 // Tag: ({ color, children }: { color: TagColor | string, children }) — prototype L30-45 verbatim
 // ErrorBoundary: class component, catches render errors, shows reload UI
 // scoring.ts:
-export function judgmentScore(issues: { correct: boolean }[], checked: Set<number>): number;
-export function quizVerdict(score: number, total: number): string;  // the 3 end-screen strings, prototype L517-521
+export function judgmentScore(
+  issues: { correct: boolean }[],
+  checked: Set<number>,
+): number;
+export function quizVerdict(score: number, total: number): string; // the 3 end-screen strings, prototype L517-521
 export function drillVerdict(score: number, total: number): string; // prototype L710-714
 export function bestScore(prev: number | null, next: number): number; // max, null-safe
 ```
@@ -403,7 +475,8 @@ describe("verdicts", () => {
 });
 
 describe("bestScore", () => {
-  it("takes first score when no previous", () => expect(bestScore(null, 7)).toBe(7));
+  it("takes first score when no previous", () =>
+    expect(bestScore(null, 7)).toBe(7));
   it("keeps the max", () => {
     expect(bestScore(9, 7)).toBe(9);
     expect(bestScore(7, 9)).toBe(9);
@@ -414,13 +487,18 @@ describe("bestScore", () => {
 - [ ] **Step 2: Run** → FAIL. **Step 3: Implement** `src/lib/scoring.ts` (verdict strings copied verbatim from prototype L517-521 / L710-714):
 
 ```ts
-export function judgmentScore(issues: { correct: boolean }[], checked: Set<number>): number {
+export function judgmentScore(
+  issues: { correct: boolean }[],
+  checked: Set<number>,
+): number {
   return issues.filter((it, idx) => it.correct === checked.has(idx)).length;
 }
 
 export function quizVerdict(score: number, _total: number): string {
-  if (score >= 10) return "Interview-ready on the concepts. Move to the missions.";
-  if (score >= 7) return "Solid base. Re-run it and read the explanations you missed.";
+  if (score >= 10)
+    return "Interview-ready on the concepts. Move to the missions.";
+  if (score >= 7)
+    return "Solid base. Re-run it and read the explanations you missed.";
   return "Re-read the guide, then run the quiz again.";
 }
 
@@ -441,8 +519,12 @@ export function bestScore(prev: number | null, next: number): number {
 ```tsx
 import { Component, type ReactNode } from "react";
 
-interface Props { children: ReactNode; }
-interface State { error: Error | null; }
+interface Props {
+  children: ReactNode;
+}
+interface State {
+  error: Error | null;
+}
 
 export class ErrorBoundary extends Component<Props, State> {
   state: State = { error: null };
@@ -455,10 +537,17 @@ export class ErrorBoundary extends Component<Props, State> {
     if (this.state.error) {
       return (
         <div className="text-center py-16">
-          <p className="text-lg font-semibold text-slate-100 mb-2">Something broke in this module.</p>
-          <p className="text-sm text-slate-400 mb-6 font-mono">{this.state.error.message}</p>
+          <p className="text-lg font-semibold text-slate-100 mb-2">
+            Something broke in this module.
+          </p>
+          <p className="text-sm text-slate-400 mb-6 font-mono">
+            {this.state.error.message}
+          </p>
           <button
-            onClick={() => { this.setState({ error: null }); window.location.assign("/"); }}
+            onClick={() => {
+              this.setState({ error: null });
+              window.location.assign("/");
+            }}
             className="px-5 py-2 rounded-lg bg-cyan-700 hover:bg-cyan-600 text-white font-medium"
           >
             Back to the dojo
@@ -478,9 +567,11 @@ export class ErrorBoundary extends Component<Props, State> {
 ### Task 5: Modules — port all six from the prototype
 
 **Files:**
+
 - Create: `src/modules/BookModule.tsx`, `src/modules/QuizModule.tsx`, `src/modules/ReviewModule.tsx`, `src/modules/DrillModule.tsx`, `src/modules/TestModule.tsx`, `src/modules/CardsModule.tsx`
 
 **Interfaces:**
+
 - Consumes: content exports (Task 3), Hex/Code/Tag (Task 4), scoring helpers (Task 4), storage (Task 2).
 - Produces: default-export React components, no props except noted. `BookModule` reads `useParams().chapter` (1-based string) and navigates via `useNavigate`. `QuizModule` takes `{ onBest(score: number): void }`.
 
@@ -488,6 +579,7 @@ Port each module from the prototype (Quiz L485-584, Review L586-679, Drill L681-
 
 1. **All modules:** replace inline scoring/verdict expressions with Task 4 helpers (`judgmentScore` in Review, `quizVerdict`/`drillVerdict` in end screens).
 2. **DrillModule:** replace `` cls = `border-slate-700 bg-slate-900 text-slate-200 hover:border-${c}-600` `` (prototype L744) with static map:
+
 ```ts
 const HOVER_BORDER: Record<TagColor, string> = {
   cyan: "hover:border-cyan-600",
@@ -497,18 +589,21 @@ const HOVER_BORDER: Record<TagColor, string> = {
   slate: "hover:border-slate-600",
 };
 ```
-   and grid `grid-cols-2` → `grid-cols-1 min-[360px]:grid-cols-2` (mobile pass). On finish: `saveProgress({ drillBest: bestScore(loadProgress().drillBest, score) })`.
-3. **QuizModule:** on completion call `onBest(score)` (parent persists + updates header badge).
-4. **BookModule:** chapter from route — `const ch = Math.min(Math.max((Number(useParams().chapter) || 1) - 1, 0), BOOK.length - 1)`; hex navigator + prev/next buttons call `navigate(\`/book/\${n + 1}\`)`; `read` initialized from `loadProgress().readChapters`, `markAndGo` persists `saveProgress({ readChapters: [...next] })`; scroll respects reduced motion:
+
+and grid `grid-cols-2` → `grid-cols-1 min-[360px]:grid-cols-2` (mobile pass). On finish: `saveProgress({ drillBest: bestScore(loadProgress().drillBest, score) })`. 3. **QuizModule:** on completion call `onBest(score)` (parent persists + updates header badge). 4. **BookModule:** chapter from route — `const ch = Math.min(Math.max((Number(useParams().chapter) || 1) - 1, 0), BOOK.length - 1)`; hex navigator + prev/next buttons call `navigate(\`/book/\${n + 1}\`)`; `read`initialized from`loadProgress().readChapters`, `markAndGo`persists`saveProgress({ readChapters: [...next] })`; scroll respects reduced motion:
+
 ```ts
-const prefersReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+const prefersReduced = window.matchMedia(
+  "(prefers-reduced-motion: reduce)",
+).matches;
 window.scrollTo({ top: 0, behavior: prefersReduced ? "auto" : "smooth" });
 ```
-   Hex chapter buttons get `aria-label={\`Chapter \${idx + 1}: \${c.title}\`}` and `aria-current={idx === ch ? "page" : undefined}`.
-5. **CardsModule:** `flipped` initialized from `loadProgress().flippedCards`, persisted on flip; card button gets `aria-expanded={isFlipped}`; filter buttons get `aria-pressed={filter === c}`.
-6. **TestModule:** `checks` initialized from `loadProgress().testChecklist`, persisted on toggle; checklist buttons `aria-pressed`, model-answer button `aria-expanded`.
-7. **ReviewModule:** issue buttons get `aria-pressed={checked.has(idx)}` (pre-reveal), `disabled`-like behavior stays as-is post-reveal.
-8. **All interactive elements:** ensure visible focus: add `focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan-400` to button class strings (replace the one `focus:outline-none` in BookModule hex buttons with the focus-visible ring). Contrast: `text-slate-500` on `bg-slate-950` fails AA for the "tap to reveal" hint and header sub — bump those to `text-slate-400`.
+
+Hex chapter buttons get `aria-label={\`Chapter \${idx + 1}: \${c.title}\`}`and`aria-current={idx === ch ? "page" : undefined}`.
+5. **CardsModule:** `flipped`initialized from`loadProgress().flippedCards`, persisted on flip; card button gets `aria-expanded={isFlipped}`; filter buttons get `aria-pressed={filter === c}`.
+6. **TestModule:** `checks`initialized from`loadProgress().testChecklist`, persisted on toggle; checklist buttons `aria-pressed`, model-answer button `aria-expanded`.
+7. **ReviewModule:** issue buttons get `aria-pressed={checked.has(idx)}`(pre-reveal),`disabled`-like behavior stays as-is post-reveal.
+8. **All interactive elements:** ensure visible focus: add `focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan-400`to button class strings (replace the one`focus:outline-none`in BookModule hex buttons with the focus-visible ring). Contrast:`text-slate-500`on`bg-slate-950`fails AA for the "tap to reveal" hint and header sub — bump those to`text-slate-400`.
 
 - [ ] **Step 1:** Port QuizModule + DrillModule (transformations 1-3, 8).
 - [ ] **Step 2:** Port ReviewModule + TestModule + CardsModule (1, 5-8).
@@ -521,10 +616,12 @@ window.scrollTo({ top: 0, behavior: prefersReduced ? "auto" : "smooth" });
 ### Task 6: App shell, routing, footer reset + smoke tests
 
 **Files:**
+
 - Modify: `src/App.tsx` (replace placeholder)
 - Create: `src/App.test.tsx`
 
 **Interfaces:**
+
 - Consumes: all modules, ErrorBoundary, storage.
 - Produces: routed app. Header/nav/footer from prototype L1193-1263 with `NavLink`s.
 
@@ -559,7 +656,11 @@ import { MemoryRouter } from "react-router";
 import App from "./App";
 
 const at = (path: string) =>
-  render(<MemoryRouter initialEntries={[path]}><App /></MemoryRouter>);
+  render(
+    <MemoryRouter initialEntries={[path]}>
+      <App />
+    </MemoryRouter>,
+  );
 
 describe("App routing", () => {
   beforeEach(() => localStorage.clear());
@@ -581,11 +682,15 @@ describe("App routing", () => {
 
   it("renders review, drill, testing, cards", () => {
     at("/review");
-    expect(screen.getByText(/Mission 1: the entangled use case/)).toBeInTheDocument();
+    expect(
+      screen.getByText(/Mission 1: the entangled use case/),
+    ).toBeInTheDocument();
     at("/drill");
     expect(screen.getByText(/Where does this line belong/)).toBeInTheDocument();
     at("/testing");
-    expect(screen.getByText(/test redeemReward without mocking/)).toBeInTheDocument();
+    expect(
+      screen.getByText(/test redeemReward without mocking/),
+    ).toBeInTheDocument();
     at("/cards");
     expect(screen.getAllByText("System design").length).toBeGreaterThan(0);
   });
@@ -593,7 +698,11 @@ describe("App routing", () => {
   it("quiz answer flow scores and advances", async () => {
     const user = userEvent.setup();
     at("/quiz");
-    await user.click(screen.getByText("An interface defined by the inner logic that expresses a need"));
+    await user.click(
+      screen.getByText(
+        "An interface defined by the inner logic that expresses a need",
+      ),
+    );
     expect(screen.getByText(/Why:/)).toBeInTheDocument();
     await user.click(screen.getByText("Next"));
     expect(screen.getByText(/Question 2 \/ 12/)).toBeInTheDocument();
@@ -602,8 +711,12 @@ describe("App routing", () => {
   it("persists and resets progress", async () => {
     const user = userEvent.setup();
     at("/book/1");
-    await user.click(screen.getByRole("button", { name: /Coupling and the Direction/ }));
-    expect(JSON.parse(localStorage.getItem("hexagon-dojo:v1")!)?.readChapters).toContain(0);
+    await user.click(
+      screen.getByRole("button", { name: /Coupling and the Direction/ }),
+    );
+    expect(
+      JSON.parse(localStorage.getItem("hexagon-dojo:v1")!)?.readChapters,
+    ).toContain(0);
     await user.click(screen.getByRole("button", { name: /Reset progress/ }));
   });
 });
@@ -619,6 +732,7 @@ describe("App routing", () => {
 ### Task 7: Lint, format, CI
 
 **Files:**
+
 - Create: `eslint.config.js` (scaffold likely provided one — extend it), `.prettierrc.json`, `.prettierignore`, `.github/workflows/ci.yml`
 - Modify: `package.json` scripts
 
@@ -663,6 +777,7 @@ jobs:
 ### Task 8: gatekit (report-only) + README + LICENSE
 
 **Files:**
+
 - Create: `gatekit.json` + vendored gate files (CLI-managed), `README.md`, `LICENSE`, `vercel.json`
 
 - [ ] **Step 1: gatekit install.** Follow current gatekit docs (repo `PaulCailly/gatekit`, docs on GitHub Pages). Expected shape: `npx` the CLI init with report-only mode, which writes `gatekit.json` + `.github/workflows/gatekit.yml`. Check `npx gatekit@latest --help` first; if npm publish still pending, install from GitHub: `npx github:PaulCailly/gatekit init --report-only`. Known gotchas: needs node 22; health gate needs TypeScript (we have it).
