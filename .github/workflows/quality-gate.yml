@@ -30,7 +30,13 @@ jobs:
         run: node scripts/health/index.mjs src --json .health/health.json | tee -a "$GITHUB_STEP_SUMMARY"
       - name: Install report deps
         working-directory: .github/sentinel
-        run: npm ci --no-audit --no-fund
+        # Local fix (candidate for gatekit upstream): the root `npm i` above
+        # leaves vite's esbuild in the parent node_modules, which the nested
+        # esbuild postinstall picks up ("Expected 0.28.x but got 0.21.x").
+        # Root deps are no longer needed past the metrics step, so drop them.
+        run: |
+          rm -rf "$GITHUB_WORKSPACE/node_modules"
+          npm ci --no-audit --no-fund
       - name: Code quality report
         working-directory: .github/sentinel
         run: npm run quality-report
