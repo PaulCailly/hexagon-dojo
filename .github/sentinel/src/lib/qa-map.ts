@@ -55,37 +55,24 @@ interface GeneratedFile {
 
 /** Merge the generated skeleton with the overlay. Throws if the overlay points at
  *  a route that doesn't exist in the skeleton (catches drift after a route rename). */
-export function mergeQaMap(
-  generated: GeneratedFile,
-  overlay: QaOverlay,
-): QaMap {
+export function mergeQaMap(generated: GeneratedFile, overlay: QaOverlay): QaMap {
   const known = new Set(generated.routes.map((r) => r.path));
 
   const routeToDomain = new Map<string, string>();
   for (const d of overlay.domains) {
     for (const r of d.routes) {
-      if (!known.has(r))
-        throw new Error(
-          `Overlay domain "${d.key}" references unknown route: ${r}`,
-        );
+      if (!known.has(r)) throw new Error(`Overlay domain "${d.key}" references unknown route: ${r}`);
       routeToDomain.set(r, d.key);
     }
   }
   for (const r of Object.keys(overlay.routePreconditions)) {
-    if (!known.has(r))
-      throw new Error(
-        `Overlay routePreconditions references unknown route: ${r}`,
-      );
+    if (!known.has(r)) throw new Error(`Overlay routePreconditions references unknown route: ${r}`);
   }
   for (const r of overlay.outOfScope) {
-    if (!known.has(r))
-      throw new Error(`Overlay outOfScope references unknown route: ${r}`);
+    if (!known.has(r)) throw new Error(`Overlay outOfScope references unknown route: ${r}`);
   }
   for (const r of overlay.outOfScope) {
-    if (routeToDomain.has(r))
-      throw new Error(
-        `Overlay route "${r}" is in both a domain and outOfScope`,
-      );
+    if (routeToDomain.has(r)) throw new Error(`Overlay route "${r}" is in both a domain and outOfScope`);
   }
 
   const routes: QaRoute[] = generated.routes.map((g) => ({
@@ -108,9 +95,7 @@ export function mergeQaMap(
 /** Load + merge the committed skeleton and the overlay. */
 export function loadQaMap(): QaMap {
   const here = path.dirname(fileURLToPath(import.meta.url));
-  const generated = JSON.parse(
-    readFileSync(path.join(here, "qa-map.generated.json"), "utf8"),
-  ) as GeneratedFile;
+  const generated = JSON.parse(readFileSync(path.join(here, "qa-map.generated.json"), "utf8")) as GeneratedFile;
   return mergeQaMap(generated, OVERLAY);
 }
 
@@ -167,20 +152,13 @@ function scopedRoutes(map: QaMap, domain?: string): QaRoute[] {
  * concrete segment, so a visited `/session/abc123` credits it. Without this, dynamic
  * routes are uncoverable — a real id never equals the literal `$param`.
  */
-export function routeMatchesVisited(
-  routePath: string,
-  visitedKeys: Set<string>,
-): boolean {
+export function routeMatchesVisited(routePath: string, visitedKeys: Set<string>): boolean {
   if (!routePath.includes("$")) return visitedKeys.has(routePath);
   const re = new RegExp(
     "^" +
       routePath
         .split("/")
-        .map((seg) =>
-          seg.startsWith("$")
-            ? "[^/]+"
-            : seg.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"),
-        )
+        .map((seg) => (seg.startsWith("$") ? "[^/]+" : seg.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")))
         .join("/") +
       "$",
   );
@@ -188,36 +166,20 @@ export function routeMatchesVisited(
   return false;
 }
 
-export function coverageFor(
-  map: QaMap,
-  visited: string[],
-  opts: CoverageOpts = {},
-): Coverage {
-  const visitedKeys = new Set(
-    visited.map((v) => normalizePath(v, map.locales)),
-  );
+export function coverageFor(map: QaMap, visited: string[], opts: CoverageOpts = {}): Coverage {
+  const visitedKeys = new Set(visited.map((v) => normalizePath(v, map.locales)));
   const scoped = scopedRoutes(map, opts.domain);
   const isCovered = (r: QaRoute) => routeMatchesVisited(r.path, visitedKeys);
 
   const coveredRoutes = scoped.filter(isCovered);
-  const overall = {
-    covered: coveredRoutes.length,
-    total: scoped.length,
-    pct: pct(coveredRoutes.length, scoped.length),
-  };
+  const overall = { covered: coveredRoutes.length, total: scoped.length, pct: pct(coveredRoutes.length, scoped.length) };
 
   const domains: DomainCoverage[] = map.domains
     .filter((d) => !opts.domain || d.key === opts.domain)
     .map((d) => {
       const rs = scoped.filter((r) => r.domain === d.key);
       const cov = rs.filter(isCovered).length;
-      return {
-        key: d.key,
-        label: d.label,
-        covered: cov,
-        total: rs.length,
-        pct: pct(cov, rs.length),
-      };
+      return { key: d.key, label: d.label, covered: cov, total: rs.length, pct: pct(cov, rs.length) };
     });
 
   return {
@@ -230,17 +192,9 @@ export function coverageFor(
 }
 
 /** In-scope, enabled routes not yet covered — the steering target. */
-export function unvisited(
-  map: QaMap,
-  visited: string[],
-  opts: CoverageOpts = {},
-): QaRoute[] {
-  const visitedKeys = new Set(
-    visited.map((v) => normalizePath(v, map.locales)),
-  );
-  return scopedRoutes(map, opts.domain).filter(
-    (r) => !routeMatchesVisited(r.path, visitedKeys),
-  );
+export function unvisited(map: QaMap, visited: string[], opts: CoverageOpts = {}): QaRoute[] {
+  const visitedKeys = new Set(visited.map((v) => normalizePath(v, map.locales)));
+  return scopedRoutes(map, opts.domain).filter((r) => !routeMatchesVisited(r.path, visitedKeys));
 }
 
 export function routesForDomain(map: QaMap, domainKey: string): QaRoute[] {

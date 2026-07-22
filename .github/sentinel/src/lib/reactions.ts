@@ -42,10 +42,7 @@ const realDeps: ReactionDeps = { octokit, core, owner, repo };
  *  Best-effort end-to-end: a missing comment id (e.g. a manual workflow run with
  *  no triggering comment) is a no-op, and any reaction API failure is logged but
  *  never thrown — reacting must never sink the job it's annotating. */
-export function trackTriggerReaction(
-  commentId: number | undefined,
-  deps: ReactionDeps = realDeps,
-) {
+export function trackTriggerReaction(commentId: number | undefined, deps: ReactionDeps = realDeps) {
   const { octokit: gh, core: log, owner: o, repo: r } = deps;
   let eyesId: number | undefined;
   const warn = (what: string, err: unknown) =>

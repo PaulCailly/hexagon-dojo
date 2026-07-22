@@ -16,10 +16,7 @@ const LINK_TTL_DAYS = 7;
  * Returns the signed URL, or null when creds are absent / anything fails (logged,
  * never fatal).
  */
-export async function uploadVideo(
-  video: Buffer,
-  pathname: string,
-): Promise<string | null> {
+export async function uploadVideo(video: Buffer, pathname: string): Promise<string | null> {
   // put() authenticates solely via BLOB_READ_WRITE_TOKEN; BLOB_STORE_ID is not
   // used by the upload itself.  Gate on the token alone so a half-configured
   // environment (store id set, token missing) skips cleanly instead of
@@ -33,26 +30,15 @@ export async function uploadVideo(
     });
     const key = new URL(blob.url).pathname.replace(/^\//, "");
     const validUntil = Date.now() + LINK_TTL_DAYS * 24 * 3600 * 1000;
-    const token = await issueSignedToken({
-      pathname: key,
-      operations: ["get"],
-      validUntil,
-    });
+    const token = await issueSignedToken({ pathname: key, operations: ["get"], validUntil });
     const { presignedUrl } = await presignUrl(
-      {
-        clientSigningToken: token.clientSigningToken,
-        delegationToken: token.delegationToken,
-      },
+      { clientSigningToken: token.clientSigningToken, delegationToken: token.delegationToken },
       { operation: "get", pathname: key, access: "private", validUntil },
     );
-    console.log(
-      `Video published (${(video.length / 1_048_576).toFixed(1)}MB): ${presignedUrl.slice(0, 80)}…`,
-    );
+    console.log(`Video published (${(video.length / 1_048_576).toFixed(1)}MB): ${presignedUrl.slice(0, 80)}…`);
     return presignedUrl;
   } catch (err) {
-    console.error(
-      `Video upload failed: ${err instanceof Error ? err.message : String(err)}`,
-    );
+    console.error(`Video upload failed: ${err instanceof Error ? err.message : String(err)}`);
     return null;
   }
 }

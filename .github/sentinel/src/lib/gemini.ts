@@ -53,10 +53,7 @@ export interface Interaction {
   steps?: InteractionStep[];
   /** SDK convenience: concatenated text of the last model output, if any. */
   text?: string;
-  usage?: { input_tokens?: number; output_tokens?: number } & Record<
-    string,
-    unknown
-  >;
+  usage?: { input_tokens?: number; output_tokens?: number } & Record<string, unknown>;
 }
 
 /** A custom (non-predefined) tool the model may call alongside computer use. */
@@ -139,29 +136,13 @@ export function functionCalls(interaction: Interaction): FunctionCall[] {
  *  API actually returns — it may be `usage`, `usage_metadata` (snake) or
  *  `usageMetadata` (camel), with input/output named `*_tokens`,
  *  `prompt/candidates_token_count`, or the camelCase variants. Zeros if absent. */
-export function usageOf(interaction: Interaction): {
-  inputTokens: number;
-  outputTokens: number;
-} {
+export function usageOf(interaction: Interaction): { inputTokens: number; outputTokens: number } {
   const it = interaction as unknown as Record<string, unknown>;
-  const u = (it.usage ?? it.usage_metadata ?? it.usageMetadata ?? {}) as Record<
-    string,
-    number
-  >;
+  const u = (it.usage ?? it.usage_metadata ?? it.usageMetadata ?? {}) as Record<string, number>;
   const inputTokens =
-    u.total_input_tokens ??
-    u.input_tokens ??
-    u.prompt_token_count ??
-    u.promptTokenCount ??
-    u.inputTokens ??
-    0;
+    u.total_input_tokens ?? u.input_tokens ?? u.prompt_token_count ?? u.promptTokenCount ?? u.inputTokens ?? 0;
   const outputTokens =
-    u.total_output_tokens ??
-    u.output_tokens ??
-    u.candidates_token_count ??
-    u.candidatesTokenCount ??
-    u.outputTokens ??
-    0;
+    u.total_output_tokens ?? u.output_tokens ?? u.candidates_token_count ?? u.candidatesTokenCount ?? u.outputTokens ?? 0;
   return { inputTokens, outputTokens };
 }
 
@@ -186,9 +167,6 @@ export function isSafetyBlock(err: unknown): boolean {
   const status = (err as { status?: number })?.status;
   const msg = String((err as { message?: string })?.message ?? err ?? "");
   const is400 = status === 400 || /\bstatus:?\s*400\b/i.test(msg);
-  const blocked =
-    /input blocked|safety pol(icy|icies)|sensitive data management|blocked by .*safety/i.test(
-      msg,
-    );
+  const blocked = /input blocked|safety pol(icy|icies)|sensitive data management|blocked by .*safety/i.test(msg);
   return is400 && blocked;
 }

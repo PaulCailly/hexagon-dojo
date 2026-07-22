@@ -28,10 +28,7 @@ export interface RoundRecord {
  *  GitHub's renderer — including backtick and `#`, which can otherwise terminate
  *  the surrounding ``` fence or be read as a class directive. */
 export function mmLabel(s: string): string {
-  return s
-    .replace(/["|<>{}`#]/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
+  return s.replace(/["|<>{}`#]/g, " ").replace(/\s+/g, " ").trim();
 }
 
 /** "Round 0 · Opening statements" → "Opening"; "Round 1 · Rebuttals" → "R1". */
@@ -56,12 +53,9 @@ export function positionsTable(rounds: RoundRecord[], votes: Vote[]): string {
   for (const v of votes) note(v.model);
   if (order.length === 0) return "";
 
-  const cell = (stance: string | undefined) =>
-    stance ? `${VERDICT_EMOJI[stance] ?? ""} ${stance}`.trim() : "—";
+  const cell = (stance: string | undefined) => (stance ? `${VERDICT_EMOJI[stance] ?? ""} ${stance}`.trim() : "—");
   const voteByKey = new Map(votes.map((v) => [v.model.key, v.verdict]));
-  const stanceByRound = rounds.map(
-    (r) => new Map(r.turns.map((t) => [t.model.key, t.stance])),
-  );
+  const stanceByRound = rounds.map((r) => new Map(r.turns.map((t) => [t.model.key, t.stance])));
 
   const cols = rounds.map((r) => shortRoundLabel(r.label));
   const header = `| Debater | ${cols.join(" | ")} | Final vote |`;
@@ -93,13 +87,9 @@ export function outcomeDiagram(votes: Vote[], outcomeLine: string): string {
     const gid = `G${gi++}`;
     groupIds.push(gid);
     const emoji = VERDICT_EMOJI[verdict] ?? "";
-    lines.push(
-      `  subgraph ${gid}["${`${emoji} ${verdict} (${mdls.length})`.trim()}"]`,
-    );
+    lines.push(`  subgraph ${gid}["${`${emoji} ${verdict} (${mdls.length})`.trim()}"]`);
     lines.push("    direction TB");
-    mdls.forEach((m, i) =>
-      lines.push(`    ${gid}n${i}["${mmLabel(m.label)}"]`),
-    );
+    mdls.forEach((m, i) => lines.push(`    ${gid}n${i}["${mmLabel(m.label)}"]`));
     lines.push("  end");
   }
   lines.push(`  Out(["🏁 ${mmLabel(outcomeLine)}"])`);

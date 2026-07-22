@@ -21,12 +21,6 @@ export function mergeQaConfig(
     exclude: _e,
     ...keep
   } = prevQa as Record<string, unknown>;
-  void _r;
-  void _p;
-  void _a;
-  void _g;
-  void _rf;
-  void _pp;
-  void _e;
+  void _r; void _p; void _a; void _g; void _rf; void _pp; void _e;
   return { ...gatekitJson, qa: { ...keep, ...resolved } };
 }

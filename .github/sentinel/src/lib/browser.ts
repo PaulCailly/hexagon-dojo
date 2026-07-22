@@ -10,6 +10,7 @@ import type { Page } from "playwright";
 import { denormalize, isDestructiveIntent, QA_CONFIG } from "./qa-core.js";
 import type { FunctionCall } from "./gemini.js";
 
+
 /** Actions that can actuate / submit and so could trigger an irreversible flow.
  *  These are gated by the destructive-intent deny-list; passive actions (move,
  *  scroll, screenshot, go_back, wait) are never blocked. */
@@ -27,10 +28,7 @@ const ACTUATING_ACTIONS = new Set([
   "drag_and_drop",
 ]);
 
-function xy(
-  args: Record<string, unknown>,
-  screen: { width: number; height: number },
-): { x: number; y: number } {
+function xy(args: Record<string, unknown>, screen: { width: number; height: number }): { x: number; y: number } {
   return {
     x: denormalize(Number(args.x ?? 0), screen.width),
     y: denormalize(Number(args.y ?? 0), screen.height),
@@ -38,15 +36,7 @@ function xy(
 }
 
 /** Pointer actions worth a visible pulse in the replay. */
-const PULSE_ACTIONS = new Set([
-  "click",
-  "double_click",
-  "triple_click",
-  "right_click",
-  "middle_click",
-  "mouse_down",
-  "type",
-]);
+const PULSE_ACTIONS = new Set(["click", "double_click", "triple_click", "right_click", "middle_click", "mouse_down", "type"]);
 
 /** Drop a short-lived pulsing ripple at (x, y) so the rrweb replay shows where
  *  the agent clicked/tapped. rrweb records the inserted element as a DOM
@@ -123,14 +113,10 @@ export async function executeAction(
       break;
     }
     case "right_click":
-      await page.mouse.click(xy(a, screen).x, xy(a, screen).y, {
-        button: "right",
-      });
+      await page.mouse.click(xy(a, screen).x, xy(a, screen).y, { button: "right" });
       break;
     case "middle_click":
-      await page.mouse.click(xy(a, screen).x, xy(a, screen).y, {
-        button: "middle",
-      });
+      await page.mouse.click(xy(a, screen).x, xy(a, screen).y, { button: "middle" });
       break;
     case "move":
       await page.mouse.move(xy(a, screen).x, xy(a, screen).y);
@@ -227,18 +213,11 @@ export async function captureState(page: Page): Promise<PageState> {
  *  Best-effort: returns neutral values if the evaluate fails. */
 export async function evaluateLocale(
   page: Page,
-): Promise<{
-  htmlLang: string | null;
-  dir: string | null;
-  horizontalOverflowPx: number;
-  rawKeyHits: string[];
-  interpolationLeaks: string[];
-}> {
+): Promise<{ htmlLang: string | null; dir: string | null; horizontalOverflowPx: number; rawKeyHits: string[]; interpolationLeaks: string[] }> {
   try {
     return await page.evaluate(() => {
       const html = document.documentElement;
-      const dir =
-        html.getAttribute("dir") || getComputedStyle(html).direction || null;
+      const dir = html.getAttribute("dir") || getComputedStyle(html).direction || null;
       const lang = html.getAttribute("lang");
       const overflow = Math.max(0, html.scrollWidth - html.clientWidth);
       // 3+-segment requirement is a precision tradeoff: avoids false positives from
@@ -247,39 +226,20 @@ export async function evaluateLocale(
       const leakRe = /\{\{\s*[\w.]+\s*\}\}/g;
       const hits = new Set<string>();
       const leaks = new Set<string>();
-      const walker = document.createTreeWalker(
-        document.body,
-        NodeFilter.SHOW_TEXT,
-      );
+      const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
       let node: Node | null;
       while ((node = walker.nextNode())) {
         const t = (node.textContent ?? "").trim();
         if (hits.size < 10 && t.length <= 60 && re.test(t)) hits.add(t);
         if (leaks.size < 10) {
           const matches = t.match(leakRe);
-          if (matches)
-            for (const m of matches) {
-              leaks.add(m);
-              if (leaks.size >= 10) break;
-            }
+          if (matches) for (const m of matches) { leaks.add(m); if (leaks.size >= 10) break; }
         }
         if (hits.size >= 10 && leaks.size >= 10) break;
       }
-      return {
-        htmlLang: lang,
-        dir,
-        horizontalOverflowPx: overflow,
-        rawKeyHits: [...hits],
-        interpolationLeaks: [...leaks],
-      };
+      return { htmlLang: lang, dir, horizontalOverflowPx: overflow, rawKeyHits: [...hits], interpolationLeaks: [...leaks] };
     });
   } catch {
-    return {
-      htmlLang: null,
-      dir: null,
-      horizontalOverflowPx: 0,
-      rawKeyHits: [],
-      interpolationLeaks: [],
-    };
+    return { htmlLang: null, dir: null, horizontalOverflowPx: 0, rawKeyHits: [], interpolationLeaks: [] };
   }
 }

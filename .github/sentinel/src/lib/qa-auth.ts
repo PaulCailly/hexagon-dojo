@@ -60,30 +60,20 @@ export async function mintSession(): Promise<QaSession | null> {
       body: JSON.stringify({ type: "sms", phone: e164, token: otp }),
     });
     if (!res.ok) {
-      core.warning(
-        `QA login: OTP verify failed (${res.status} ${res.statusText}); exploring logged-out.`,
-      );
+      core.warning(`QA login: OTP verify failed (${res.status} ${res.statusText}); exploring logged-out.`);
       return null;
     }
     const session = (await res.json()) as Record<string, unknown>;
     if (!session.access_token) {
-      core.warning(
-        "QA login: verify returned no access_token; exploring logged-out.",
-      );
+      core.warning("QA login: verify returned no access_token; exploring logged-out.");
       return null;
     }
     // supabase-js derives the localStorage key from the project ref (the first
     // hostname label of the Supabase URL), and stores the raw session JSON.
     const ref = new URL(url).hostname.split(".")[0];
-    return {
-      storageKey: `sb-${ref}-auth-token`,
-      storageValue: JSON.stringify(session),
-      label: e164,
-    };
+    return { storageKey: `sb-${ref}-auth-token`, storageValue: JSON.stringify(session), label: e164 };
   } catch (err) {
-    core.warning(
-      `QA login failed (${err instanceof Error ? err.message : String(err)}); exploring logged-out.`,
-    );
+    core.warning(`QA login failed (${err instanceof Error ? err.message : String(err)}); exploring logged-out.`);
     return null;
   }
 }
@@ -91,10 +81,7 @@ export async function mintSession(): Promise<QaSession | null> {
 /** Seed the session into localStorage BEFORE the app's scripts run, so supabase-js
  *  adopts it on init and the agent lands signed in. Registered before `goto`;
  *  runs on that navigation ahead of page scripts. Best-effort. */
-export async function seedSession(
-  page: Page,
-  session: QaSession,
-): Promise<void> {
+export async function seedSession(page: Page, session: QaSession): Promise<void> {
   await page
     .addInitScript(
       ([key, value]) => {

@@ -10,12 +10,7 @@ import { appendFile, readFile } from "node:fs/promises";
 
 import { context, core, upsertComment } from "./lib/gh.js";
 import { details } from "./lib/markdown.js";
-import {
-  collectHealth,
-  rating,
-  summarizeFindings,
-  type HealthData,
-} from "./lib/metrics.js";
+import { collectHealth, rating, summarizeFindings, type HealthData } from "./lib/metrics.js";
 
 const MARKER = "<!-- code-quality-report -->";
 const WORST_FILES = 10;
@@ -82,16 +77,10 @@ function findingsBlock(health: HealthData): string {
   const lines = Object.entries(health.byRule)
     .sort((a, b) => b[1] - a[1])
     .map(([ruleId, n]) => `- \`${ruleId}\`: ${n}`);
-  return details(
-    `🧮 Findings by rule (${totalFindings(health)})`,
-    lines.join("\n"),
-  );
+  return details(`🧮 Findings by rule (${totalFindings(health)})`, lines.join("\n"));
 }
 
-function buildReport(
-  total: CoverageTotal | null,
-  health: HealthData | null,
-): string {
+function buildReport(total: CoverageTotal | null, health: HealthData | null): string {
   const parts = [MARKER, "## 🧭 Code Quality", ""];
 
   if (health?.score !== null && health?.score !== undefined && health.band) {
@@ -131,13 +120,10 @@ function buildReport(
 
 async function run(): Promise<void> {
   const reportDir = process.env.HEALTH_REPORT_DIR;
-  const covPath =
-    process.env.COVERAGE_SUMMARY ?? "coverage/coverage-summary.json";
+  const covPath = process.env.COVERAGE_SUMMARY ?? "coverage/coverage-summary.json";
 
   const [health, total] = await Promise.all([
-    reportDir
-      ? collectHealth(reportDir, null).catch(() => null)
-      : Promise.resolve(null),
+    reportDir ? collectHealth(reportDir, null).catch(() => null) : Promise.resolve(null),
     readCoverage(covPath),
   ]);
 

@@ -28,9 +28,7 @@ export function parseCommitLog(out: string): Commit[] {
 
 /** Plain bullet list of commit subjects — the deterministic fallback body. */
 export function rawCommitList(commits: Commit[]): string {
-  return commits
-    .map((c) => `- ${c.subject} (${c.hash.slice(0, 7)})`)
-    .join("\n");
+  return commits.map((c) => `- ${c.subject} (${c.hash.slice(0, 7)})`).join("\n");
 }
 
 /**

@@ -11,25 +11,15 @@
  */
 import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import path from "node:path";
-import {
-  extractRoutes,
-  type QaConfig,
-  type GeneratedFile,
-} from "./route-extract.js";
+import { extractRoutes, type QaConfig, type GeneratedFile } from "./route-extract.js";
 import type { GeneratedRoute } from "./qa-map.js";
 
 /** Deterministic strategies the detector may emit (NOT `llm`/`auto`). */
 const KNOWN_STRATEGIES = ["next-pages", "next-app", "glob", "code-router"];
 
 const ROUTER_GLOBS = [
-  "src/router.tsx",
-  "src/router.ts",
-  "src/presentation/app/router.tsx",
-  "src/App.tsx",
-  "src/App.jsx",
-  "src/routes.tsx",
-  "src/routes.ts",
-  "routes.tsx",
+  "src/router.tsx", "src/router.ts", "src/presentation/app/router.tsx",
+  "src/App.tsx", "src/App.jsx", "src/routes.tsx", "src/routes.ts", "routes.tsx",
 ];
 const ROUTER_DIRS = ["app", "pages", "src/pages", "routes", "src/routes"];
 const MAX_FILES = 12;
@@ -81,8 +71,7 @@ export function gatherStackSignals(root: string): StackSignals {
     const abs = path.join(root, dir);
     if (!existsSync(abs) || !statSync(abs).isDirectory()) continue;
     for (const e of readdirSync(abs, { withFileTypes: true })) {
-      if (e.isFile() && /\.(tsx?|jsx?)$/.test(e.name))
-        candidates.add(path.join(dir, e.name));
+      if (e.isFile() && /\.(tsx?|jsx?)$/.test(e.name)) candidates.add(path.join(dir, e.name));
     }
   }
   const routerFiles: { path: string; text: string }[] = [];
@@ -90,18 +79,12 @@ export function gatherStackSignals(root: string): StackSignals {
     if (routerFiles.length >= MAX_FILES) break;
     const abs = path.join(root, rel);
     if (!existsSync(abs) || !statSync(abs).isFile()) continue;
-    routerFiles.push({
-      path: rel,
-      text: readFileSync(abs, "utf8").slice(0, MAX_BYTES),
-    });
+    routerFiles.push({ path: rel, text: readFileSync(abs, "utf8").slice(0, MAX_BYTES) });
   }
   return { deps: readDeps(root), tree: shallowTree(root), routerFiles };
 }
 
-export function buildDetectPrompt(signals: StackSignals): {
-  system: string;
-  user: string;
-} {
+export function buildDetectPrompt(signals: StackSignals): { system: string; user: string } {
   const system =
     "You analyze a web app's source to determine how its routes are defined. " +
     "Respond with ONE JSON object and nothing else, matching:\n" +
@@ -136,8 +119,7 @@ export function parseDetection(raw: string): Detection {
     if (!KNOWN_STRATEGIES.includes(strategy.routing)) strategy = null;
   }
   if (routes != null) {
-    if (!Array.isArray(routes))
-      throw new Error("parseDetection: 'routes' is not an array");
+    if (!Array.isArray(routes)) throw new Error("parseDetection: 'routes' is not an array");
     for (const r of routes) {
       if (!r || typeof r.path !== "string") {
         throw new Error("parseDetection: each route needs a string 'path'");
@@ -170,18 +152,12 @@ export function resolveAuto(
       gen = null;
     }
     if (gen && gen.routes.length > 0) {
-      return {
-        routes: gen.routes,
-        locales: gen.locales,
-        persist: detection.strategy,
-      };
+      return { routes: gen.routes, locales: gen.locales, persist: detection.strategy };
     }
   }
   const fallback = detection.routes ?? [];
   if (fallback.length === 0) {
-    throw new Error(
-      "resolveAuto: detection produced no routes (strategy empty and no LLM routes)",
-    );
+    throw new Error("resolveAuto: detection produced no routes (strategy empty and no LLM routes)");
   }
   // Fallback persists a clean `llm` config — no stale strategy keys carried over.
   return { routes: fallback, locales: [], persist: { routing: "llm" } };

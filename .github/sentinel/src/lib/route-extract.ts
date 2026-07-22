@@ -103,9 +103,7 @@ function extractNextPages(rootDir: string, cfg: QaConfig): GeneratedRoute[] {
     seen.set(routePath, { path: routePath, section, module });
   }
 
-  return [...seen.values()].sort((a, b) =>
-    a.path < b.path ? -1 : a.path > b.path ? 1 : 0,
-  );
+  return [...seen.values()].sort((a, b) => (a.path < b.path ? -1 : a.path > b.path ? 1 : 0));
 }
 
 function extractNextApp(rootDir: string, cfg: QaConfig): GeneratedRoute[] {
@@ -117,28 +115,21 @@ function extractNextApp(rootDir: string, cfg: QaConfig): GeneratedRoute[] {
     // Only page.{tsx,jsx,ts,js} files count
     if (!/(?:^|\/)page\.(tsx?|jsx?)$/.test(f)) continue;
     // Route = directory containing the page file, relative to appDir
-    const dirPart = f
-      .replace(/\/page\.(tsx?|jsx?)$/, "")
-      .replace(/^page\.(tsx?|jsx?)$/, "");
+    const dirPart = f.replace(/\/page\.(tsx?|jsx?)$/, "").replace(/^page\.(tsx?|jsx?)$/, "");
     // Convert to route path: empty dirPart means root
     let routePath: string;
     if (!dirPart) {
       routePath = "/";
     } else {
       // Strip Next.js route groups (e.g. "(marketing)") — layout-only, never in the URL.
-      const segs = dirPart
-        .split("/")
-        .filter((s) => !/^\(.*\)$/.test(s))
-        .map(dynamicToColon);
+      const segs = dirPart.split("/").filter(s => !/^\(.*\)$/.test(s)).map(dynamicToColon);
       routePath = segs.length === 0 ? "/" : "/" + segs.join("/");
     }
     const { section, module } = sectionAndModule(routePath, cfg.modulePrefix);
     seen.set(routePath, { path: routePath, section, module });
   }
 
-  return [...seen.values()].sort((a, b) =>
-    a.path < b.path ? -1 : a.path > b.path ? 1 : 0,
-  );
+  return [...seen.values()].sort((a, b) => (a.path < b.path ? -1 : a.path > b.path ? 1 : 0));
 }
 
 /**
@@ -173,9 +164,7 @@ function extractGlob(rootDir: string, cfg: QaConfig): GeneratedRoute[] {
     routes.push({ path: routePath, section, module });
   }
 
-  return routes.sort((a, b) =>
-    a.path < b.path ? -1 : a.path > b.path ? 1 : 0,
-  );
+  return routes.sort((a, b) => (a.path < b.path ? -1 : a.path > b.path ? 1 : 0));
 }
 
 /** Default pattern matches `path: "..."` / `path: '...'` route literals. */
@@ -202,9 +191,7 @@ function extractCodeRouter(rootDir: string, cfg: QaConfig): GeneratedRoute[] {
       seen.set(routePath, { path: routePath, section, module });
     }
   }
-  return [...seen.values()].sort((a, b) =>
-    a.path < b.path ? -1 : a.path > b.path ? 1 : 0,
-  );
+  return [...seen.values()].sort((a, b) => (a.path < b.path ? -1 : a.path > b.path ? 1 : 0));
 }
 
 // ── public API ────────────────────────────────────────────────────────────────
@@ -214,28 +201,16 @@ export function extractRoutes(rootDir: string, cfg: QaConfig): GeneratedFile {
 
   switch (cfg.routing) {
     case "next-pages":
-      return {
-        generatedAt: null,
-        locales,
-        routes: extractNextPages(rootDir, cfg),
-      };
+      return { generatedAt: null, locales, routes: extractNextPages(rootDir, cfg) };
 
     case "next-app":
-      return {
-        generatedAt: null,
-        locales,
-        routes: extractNextApp(rootDir, cfg),
-      };
+      return { generatedAt: null, locales, routes: extractNextApp(rootDir, cfg) };
 
     case "glob":
       return { generatedAt: null, locales, routes: extractGlob(rootDir, cfg) };
 
     case "code-router":
-      return {
-        generatedAt: null,
-        locales,
-        routes: extractCodeRouter(rootDir, cfg),
-      };
+      return { generatedAt: null, locales, routes: extractCodeRouter(rootDir, cfg) };
 
     case "llm":
     case "auto":

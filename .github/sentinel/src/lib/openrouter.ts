@@ -20,62 +20,14 @@ export interface ModelSpec {
  * Pricing is USD per 1M tokens, from OpenRouter's published rates.
  */
 export const MODELS: Record<string, ModelSpec> = {
-  glm: {
-    key: "glm",
-    slug: "z-ai/glm-5.2",
-    label: "GLM 5.2",
-    input: 1.2,
-    output: 4.1,
-  },
-  opus: {
-    key: "opus",
-    slug: "anthropic/claude-opus-4.8",
-    label: "Claude Opus 4.8",
-    input: 5,
-    output: 25,
-  },
-  gpt: {
-    key: "gpt",
-    slug: "openai/gpt-5.5",
-    label: "GPT-5.5",
-    input: 5,
-    output: 30,
-  },
-  gemini: {
-    key: "gemini",
-    slug: "google/gemini-3.1-pro-preview",
-    label: "Gemini 3.1 Pro",
-    input: 2,
-    output: 12,
-  },
-  deepseek: {
-    key: "deepseek",
-    slug: "deepseek/deepseek-v4-pro",
-    label: "DeepSeek V4 Pro",
-    input: 0.435,
-    output: 0.87,
-  },
-  minimax: {
-    key: "minimax",
-    slug: "minimax/minimax-m3",
-    label: "MiniMax M3",
-    input: 0.3,
-    output: 1.2,
-  },
-  mimo: {
-    key: "mimo",
-    slug: "xiaomi/mimo-v2.5-pro",
-    label: "Xiaomi MiMo 2.5 Pro",
-    input: 0.435,
-    output: 0.87,
-  },
-  kimi: {
-    key: "kimi",
-    slug: "moonshotai/kimi-k2.7-code",
-    label: "Kimi K2.7 Code",
-    input: 0.612,
-    output: 3.069,
-  },
+  glm: { key: "glm", slug: "z-ai/glm-5.2", label: "GLM 5.2", input: 1.2, output: 4.1 },
+  opus: { key: "opus", slug: "anthropic/claude-opus-4.8", label: "Claude Opus 4.8", input: 5, output: 25 },
+  gpt: { key: "gpt", slug: "openai/gpt-5.5", label: "GPT-5.5", input: 5, output: 30 },
+  gemini: { key: "gemini", slug: "google/gemini-3.1-pro-preview", label: "Gemini 3.1 Pro", input: 2, output: 12 },
+  deepseek: { key: "deepseek", slug: "deepseek/deepseek-v4-pro", label: "DeepSeek V4 Pro", input: 0.435, output: 0.87 },
+  minimax: { key: "minimax", slug: "minimax/minimax-m3", label: "MiniMax M3", input: 0.3, output: 1.2 },
+  mimo: { key: "mimo", slug: "xiaomi/mimo-v2.5-pro", label: "Xiaomi MiMo 2.5 Pro", input: 0.435, output: 0.87 },
+  kimi: { key: "kimi", slug: "moonshotai/kimi-k2.7-code", label: "Kimi K2.7 Code", input: 0.612, output: 3.069 },
 };
 
 /** Cheap, capable default for non-interactive jobs (release-changelog fallback,
@@ -96,13 +48,8 @@ export const REVIEW_DEFAULT_MODEL_KEY = "opus";
 export const FALLBACK_KEYS = ["glm", "deepseek", "gemini", "gpt"] as const;
 
 /** OpenRouter slug chain for fallback routing, `primaryKey` first, de-duplicated. */
-export function fallbackSlugs(
-  primaryKey: string = DEFAULT_MODEL_KEY,
-): string[] {
-  const ordered = [
-    primaryKey,
-    ...FALLBACK_KEYS.filter((k) => k !== primaryKey),
-  ];
+export function fallbackSlugs(primaryKey: string = DEFAULT_MODEL_KEY): string[] {
+  const ordered = [primaryKey, ...FALLBACK_KEYS.filter((k) => k !== primaryKey)];
   const seen = new Set<string>();
   const slugs: string[] = [];
   for (const key of ordered) {
@@ -161,14 +108,8 @@ const RAW_SLUG_RE = /^[a-z0-9][\w.-]*\/[a-z0-9][\w.:-]*$/i;
  */
 export function resolveModels(commentBody: string): ModelSpec[] {
   const firstLine = commentBody.split(/\r?\n/)[0] ?? "";
-  const after = firstLine
-    .trim()
-    .replace(/^\/review\b/i, "")
-    .trim();
-  const tokens = after
-    .split(/\s+/)
-    .filter(Boolean)
-    .map((t) => t.toLowerCase());
+  const after = firstLine.trim().replace(/^\/review\b/i, "").trim();
+  const tokens = after.split(/\s+/).filter(Boolean).map((t) => t.toLowerCase());
 
   if (tokens.length === 0) return [MODELS[REVIEW_DEFAULT_MODEL_KEY]];
   if (tokens.includes("all")) return Object.values(MODELS);
@@ -193,22 +134,12 @@ export function resolveModels(commentBody: string): ModelSpec[] {
 
 /** The priciest model in the set — picks who writes the cross-analysis summary. */
 export function mostExpensive(models: ModelSpec[]): ModelSpec {
-  const cost = (m: ModelSpec) =>
-    Number.isFinite(m.input) && Number.isFinite(m.output)
-      ? m.input + m.output
-      : -1;
-  return models.reduce(
-    (best, m) => (cost(m) > cost(best) ? m : best),
-    models[0],
-  );
+  const cost = (m: ModelSpec) => (Number.isFinite(m.input) && Number.isFinite(m.output) ? m.input + m.output : -1);
+  return models.reduce((best, m) => (cost(m) > cost(best) ? m : best), models[0]);
 }
 
 /** Estimate the USD cost of a run from token usage. Null when the model is unpriced. */
 export function estimateCost(usage: Usage, model: ModelSpec): number | null {
-  if (!Number.isFinite(model.input) || !Number.isFinite(model.output))
-    return null;
-  return (
-    (usage.input_tokens * model.input + usage.output_tokens * model.output) /
-    1_000_000
-  );
+  if (!Number.isFinite(model.input) || !Number.isFinite(model.output)) return null;
+  return (usage.input_tokens * model.input + usage.output_tokens * model.output) / 1_000_000;
 }

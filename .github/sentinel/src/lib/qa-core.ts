@@ -19,12 +19,7 @@ export type QaViewport = "desktop" | "mobile";
  *  three-tier scale but adds a top "critical" rung for outright broken flows. */
 export type QaSeverity = "critical" | "major" | "minor" | "info";
 
-export const SEVERITY_ORDER: QaSeverity[] = [
-  "critical",
-  "major",
-  "minor",
-  "info",
-];
+export const SEVERITY_ORDER: QaSeverity[] = ["critical", "major", "minor", "info"];
 
 export const SEVERITY_EMOJI: Record<QaSeverity, string> = {
   critical: "🔴",
@@ -76,13 +71,7 @@ export const QA_CONFIG = {
     "user_consent_management",
     "legal_terms_and_agreements",
   ],
-  budgets: {
-    scoped: 40,
-    full: 900,
-    focus: 120,
-    i18n: 20,
-    offline: 50,
-  } as Record<QaMode, number>,
+  budgets: { scoped: 40, full: 900, focus: 120, i18n: 20, offline: 50 } as Record<QaMode, number>,
   /** Same screen seen this many times in a row → the agent is stuck/looping. */
   stuckThreshold: 4,
   /** Gemini 3.5 Flash computer-use pricing, USD per 1M tokens — an ESTIMATE for
@@ -109,10 +98,7 @@ export interface ParsedQa {
  * Everything else is ignored, so `/qa please test all` still works.
  */
 export function parseQaCommand(body: string): ParsedQa {
-  const after = body
-    .trim()
-    .replace(/^\/qa\b/i, "")
-    .trim();
+  const after = body.trim().replace(/^\/qa\b/i, "").trim();
   const tokens = after.split(/\s+/).filter(Boolean);
 
   let mode: QaMode = "scoped";
@@ -156,9 +142,7 @@ export function parseQaCommand(body: string): ParsedQa {
       // Strip wrapping/trailing prose punctuation a human might add in a
       // sentence — a leading paren/quote/angle, or a trailing one / sentence
       // punctuation — before deciding whether the token is a URL.
-      const cleaned = t
-        .replace(/^[([{<"']+/, "")
-        .replace(/[)\]}>"'.,;:!?]+$/, "");
+      const cleaned = t.replace(/^[([{<"']+/, "").replace(/[)\]}>"'.,;:!?]+$/, "");
       if (/^https?:\/\//i.test(cleaned)) url = cleaned;
     }
   }
@@ -200,10 +184,7 @@ export function looksLikePinScreen(url: string): boolean {
 
 /** Turn indices to cut the network at (~30% in) and restore (~70% in), so the
  *  middle of the run is offline. */
-export function offlineWindowFor(budget: number): {
-  start: number;
-  end: number;
-} {
+export function offlineWindowFor(budget: number): { start: number; end: number } {
   return { start: Math.floor(budget * 0.3), end: Math.floor(budget * 0.7) };
 }
 
@@ -218,33 +199,23 @@ export interface ConsoleError {
  *  console noise and anything from the online baseline are ignored. */
 export function offlineFindings(errors: ConsoleError[]): QaFinding[] {
   return errors
-    .filter(
-      (e) =>
-        e.kind === "pageerror" &&
-        (e.phase === "offline" || e.phase === "resync"),
-    )
+    .filter((e) => e.kind === "pageerror" && (e.phase === "offline" || e.phase === "resync"))
     .map((e) => {
-      const phaseLabel =
-        e.phase === "resync" ? "reconnecting (resync)" : "offline";
+      const phaseLabel = e.phase === "resync" ? "reconnecting (resync)" : "offline";
       return {
         severity: "major" as QaSeverity,
         area: "offline",
         title: `Uncaught error while ${phaseLabel}: ${e.text.slice(0, 80)}`,
         description: `The app threw an uncaught exception during the ${e.phase} phase — the offline-first experience is broken here.`,
-        steps:
-          "Explored the app, cut the network mid-session, then restored it.",
-        expected:
-          "The app keeps working offline (queuing writes) and resyncs cleanly on reconnect.",
+        steps: "Explored the app, cut the network mid-session, then restored it.",
+        expected: "The app keeps working offline (queuing writes) and resyncs cleanly on reconnect.",
         actual: e.text,
       };
     });
 }
 
 /** One-line probe summary for the report. */
-export function renderOfflineProbe(
-  errors: ConsoleError[],
-  offlineTurns: number,
-): string {
+export function renderOfflineProbe(errors: ConsoleError[], offlineTurns: number): string {
   if (offlineTurns <= 0) {
     return [
       "### 📡 Offline probe",
@@ -315,12 +286,8 @@ export function isDestructiveIntent(intent: unknown): boolean {
 export function affectedAreas(files: string[]): string[] {
   const areas = new Set<string>();
   for (const f of files) {
-    const m =
-      /(?:^|\/)src\/(?:pages\/(?:\[locale\]\/)?(?:modules\/)?|presentation\/screens\/)([a-z0-9][a-z0-9-]*)(?:\/|\.tsx?$)/i.exec(
-        f,
-      );
-    if (m && !["_app", "_document", "_error"].includes(m[1].toLowerCase()))
-      areas.add(m[1]);
+    const m = /(?:^|\/)src\/(?:pages\/(?:\[locale\]\/)?(?:modules\/)?|presentation\/screens\/)([a-z0-9][a-z0-9-]*)(?:\/|\.tsx?$)/i.exec(f);
+    if (m && !["_app", "_document", "_error"].includes(m[1].toLowerCase())) areas.add(m[1]);
   }
   return [...areas].sort();
 }
@@ -343,17 +310,12 @@ const QA_SELF_MARKERS = ["<!-- qa:report -->", "<!-- qa:status -->"];
  */
 export function buildPrContext(
   input: { title: string; body: string | null; comments: PrComment[] },
-  opts: {
-    maxBodyChars?: number;
-    maxComments?: number;
-    maxCommentChars?: number;
-  } = {},
+  opts: { maxBodyChars?: number; maxComments?: number; maxCommentChars?: number } = {},
 ): string {
   const maxBody = opts.maxBodyChars ?? 1200;
   const maxComments = opts.maxComments ?? 12;
   const maxComment = opts.maxCommentChars ?? 280;
-  const trunc = (s: string, n: number) =>
-    s.length > n ? s.slice(0, n).trimEnd() + " …" : s;
+  const trunc = (s: string, n: number) => (s.length > n ? s.slice(0, n).trimEnd() + " …" : s);
 
   const lines: string[] = [];
   const title = input.title?.trim();
@@ -364,24 +326,13 @@ export function buildPrContext(
   const relevant = input.comments
     .filter((c) => c.body && !QA_SELF_MARKERS.some((m) => c.body.includes(m)))
     .slice(0, maxComments)
-    .map(
-      (c) =>
-        `- [${c.author}] ${trunc(c.body.replace(/\s+/g, " ").trim(), maxComment)}`,
-    );
+    .map((c) => `- [${c.author}] ${trunc(c.body.replace(/\s+/g, " ").trim(), maxComment)}`);
   if (relevant.length > 0) {
-    lines.push(
-      "",
-      "**Reviewers / discussion raised (re-check these):**",
-      ...relevant,
-    );
+    lines.push("", "**Reviewers / discussion raised (re-check these):**", ...relevant);
   }
 
   if (lines.length === 0) return "";
-  return [
-    "## What this PR is about (test the actual change)",
-    "",
-    ...lines,
-  ].join("\n");
+  return ["## What this PR is about (test the actual change)", "", ...lines].join("\n");
 }
 
 export interface QaFinding {
@@ -402,9 +353,7 @@ export function normalizeFinding(raw: unknown): QaFinding | null {
   const f = (raw ?? {}) as Record<string, unknown>;
   if (!f.title) return null;
   const sev = String(f.severity ?? "").toLowerCase();
-  const severity = (SEVERITY_ORDER as string[]).includes(sev)
-    ? (sev as QaSeverity)
-    : "info";
+  const severity = (SEVERITY_ORDER as string[]).includes(sev) ? (sev as QaSeverity) : "info";
   const str = (v: unknown) => (v == null ? "" : String(v));
   return {
     severity,
@@ -443,15 +392,8 @@ export function sortFindings(findings: QaFinding[]): QaFinding[] {
   );
 }
 
-export function severityCounts(
-  findings: QaFinding[],
-): Record<QaSeverity, number> {
-  const counts: Record<QaSeverity, number> = {
-    critical: 0,
-    major: 0,
-    minor: 0,
-    info: 0,
-  };
+export function severityCounts(findings: QaFinding[]): Record<QaSeverity, number> {
+  const counts: Record<QaSeverity, number> = { critical: 0, major: 0, minor: 0, info: 0 };
   for (const f of findings) counts[f.severity] += 1;
   return counts;
 }
@@ -475,10 +417,7 @@ export function trailingRepeats(history: string[]): number {
  *  pure module never has to import the Gemini SDK. */
 export interface TurnResult {
   name: string;
-  result: Array<
-    | { type: "text"; text: string }
-    | { type: "image"; data: string; mime_type: "image/png" }
-  >;
+  result: Array<{ type: "text"; text: string } | { type: "image"; data: string; mime_type: "image/png" }>;
 }
 
 export interface TurnHintOptions {
@@ -494,11 +433,9 @@ export interface TurnHintOptions {
  *  off-origin recovery note, and a nudge once the agent looks stuck looping. */
 export function buildTurnHint(o: TurnHintOptions): string {
   let hint = `url: ${o.url}`;
-  if (o.leftApp)
-    hint += " (you left the app; returned you to it — stay inside the app)";
+  if (o.leftApp) hint += " (you left the app; returned you to it — stay inside the app)";
   if (o.repeats >= o.stuckThreshold) {
-    hint +=
-      " — you've been on this screen a while; move to an area you haven't explored yet, or wrap up.";
+    hint += " — you've been on this screen a while; move to an area you haven't explored yet, or wrap up.";
   }
   return hint;
 }
@@ -531,11 +468,7 @@ export function attachStateToResults<T extends TurnResult>(
           result: [
             ...r.result,
             { type: "text" as const, text: hint },
-            {
-              type: "image" as const,
-              data: screenshotBase64,
-              mime_type: "image/png" as const,
-            },
+            { type: "image" as const, data: screenshotBase64, mime_type: "image/png" as const },
           ],
         }
       : r,
@@ -607,35 +540,21 @@ export function classifyLocale(obs: LocaleObservation): LocaleVerdict {
   if (!obs.loaded) {
     issues.push("locale page failed to load");
   } else {
-    if (
-      (RTL_LOCALES as readonly string[]).includes(obs.locale) &&
-      obs.dir !== "rtl"
-    ) {
+    if ((RTL_LOCALES as readonly string[]).includes(obs.locale) && obs.dir !== "rtl") {
       issues.push(`expected RTL direction, got "${obs.dir ?? "none"}"`);
     }
     if (obs.horizontalOverflowPx > OVERFLOW_TOLERANCE_PX) {
-      issues.push(
-        `horizontal overflow (${obs.horizontalOverflowPx}px) — content clipped or layout broken`,
-      );
+      issues.push(`horizontal overflow (${obs.horizontalOverflowPx}px) — content clipped or layout broken`);
     }
     if (obs.rawKeyHits.length > 0) {
-      issues.push(
-        `possible untranslated keys visible: ${obs.rawKeyHits.slice(0, 5).join(", ")}`,
-      );
+      issues.push(`possible untranslated keys visible: ${obs.rawKeyHits.slice(0, 5).join(", ")}`);
     }
     const leaks = obs.interpolationLeaks ?? [];
     if (leaks.length > 0) {
-      issues.push(
-        `raw interpolation placeholders visible (untranslated): ${leaks.slice(0, 5).join(", ")}`,
-      );
+      issues.push(`raw interpolation placeholders visible (untranslated): ${leaks.slice(0, 5).join(", ")}`);
     }
-    if (
-      obs.htmlLang &&
-      obs.htmlLang.split("-")[0].toLowerCase() !== obs.locale.toLowerCase()
-    ) {
-      issues.push(
-        `locale redirected — page rendered as "${obs.htmlLang}" instead of "${obs.locale}"`,
-      );
+    if (obs.htmlLang && obs.htmlLang.split("-")[0].toLowerCase() !== obs.locale.toLowerCase()) {
+      issues.push(`locale redirected — page rendered as "${obs.htmlLang}" instead of "${obs.locale}"`);
     }
   }
   return { locale: obs.locale, ok: issues.length === 0, issues };
@@ -645,20 +564,14 @@ export function classifyLocale(obs: LocaleObservation): LocaleVerdict {
  *  `major`; overflow and untranslated keys are `minor`. */
 export function localeFindings(v: LocaleVerdict): QaFinding[] {
   return v.issues.map((issue) => {
-    const severity: QaSeverity =
-      /failed to load|expected RTL|rendered as|interpolation placeholders/i.test(
-        issue,
-      )
-        ? "major"
-        : "minor";
+    const severity: QaSeverity = /failed to load|expected RTL|rendered as|interpolation placeholders/i.test(issue) ? "major" : "minor";
     return {
       severity,
       area: `i18n/${v.locale}`,
       title: `[${v.locale}] ${issue}`,
       description: `Localisation check for "${v.locale}": ${issue}.`,
       steps: `Loaded the ${v.locale} locale root and inspected the page.`,
-      expected:
-        "A correctly localised, well-laid-out page (RTL for Arabic), with no raw translation keys.",
+      expected: "A correctly localised, well-laid-out page (RTL for Arabic), with no raw translation keys.",
       actual: issue,
     };
   });
@@ -678,9 +591,7 @@ export function renderI18nSweep(verdicts: LocaleVerdict[]): string {
     "| --- | --- | --- |",
   ];
   for (const v of verdicts) {
-    lines.push(
-      `| ${v.locale} | ${v.ok ? "✅" : "⚠️"} | ${v.ok ? "—" : v.issues.join("; ")} |`,
-    );
+    lines.push(`| ${v.locale} | ${v.ok ? "✅" : "⚠️"} | ${v.ok ? "—" : v.issues.join("; ")} |`);
   }
   lines.push("");
   return lines.join("\n");
@@ -720,11 +631,7 @@ export interface ReportOptions {
   domainStatus?: Array<{ domain: string; ok: boolean; reason?: string }>;
 }
 
-const DOWNLOAD_KINDS: Record<string, DownloadKind> = {
-  pdf: "pdf",
-  csv: "csv",
-  zip: "zip",
-};
+const DOWNLOAD_KINDS: Record<string, DownloadKind> = { pdf: "pdf", csv: "csv", zip: "zip" };
 
 /** Grade a captured download: a known export type (pdf/csv/zip) with non-zero
  *  bytes passes; anything empty or of an unrecognised type fails. Content is
@@ -781,9 +688,7 @@ export function renderDownloads(verdicts: DownloadVerdict[]): string {
     "| --- | --- | --- | --- |",
   ];
   for (const v of verdicts) {
-    lines.push(
-      `| \`${v.filename}\` | ${v.kind} | ${fmtBytes(v.sizeBytes)} | ${v.ok ? "✅" : "❌"} |`,
-    );
+    lines.push(`| \`${v.filename}\` | ${v.kind} | ${fmtBytes(v.sizeBytes)} | ${v.ok ? "✅" : "❌"} |`);
   }
   lines.push("");
   return lines.join("\n");
@@ -793,18 +698,12 @@ export function renderDownloads(verdicts: DownloadVerdict[]): string {
  *  note. Scoped/focus runs are labelled partial-by-design (only `/qa all` aims at
  *  full coverage). Pass `domainStatus` (from `ReportOptions`) so aggregate fan-out
  *  runs can show `✗ <reason>` for a crashed shard instead of a misleading 0%. */
-export function renderCoverage(
-  cov: Coverage,
-  mode: QaMode,
-  domainStatus?: Array<{ domain: string; ok: boolean; reason?: string }>,
-): string {
+export function renderCoverage(cov: Coverage, mode: QaMode, domainStatus?: Array<{ domain: string; ok: boolean; reason?: string }>): string {
   const lines = ["### 🗺️ Coverage", ""];
   const partial = mode !== "full";
   lines.push(
     `Overall: **${cov.overall.covered}/${cov.overall.total} routes (${cov.overall.pct}%)**` +
-      (cov.outOfScopeCount > 0
-        ? ` · excludes ${cov.outOfScopeCount} out-of-scope`
-        : "") +
+      (cov.outOfScopeCount > 0 ? ` · excludes ${cov.outOfScopeCount} out-of-scope` : "") +
       (partial ? " · _partial by design (this run is not a full sweep)_" : ""),
     "",
   );
@@ -813,35 +712,23 @@ export function renderCoverage(
     for (const d of cov.domains) {
       const flag = d.total > 0 && d.pct === 0 ? " 🔴" : "";
       const st = domainStatus?.find((s) => s.domain === d.key);
-      const cell =
-        st && !st.ok
-          ? `✗ | ${st.reason ?? "shard failed"}`
-          : `${d.covered}/${d.total} | ${d.pct}%${flag}`;
+      const cell = st && !st.ok ? `✗ | ${st.reason ?? "shard failed"}` : `${d.covered}/${d.total} | ${d.pct}%${flag}`;
       lines.push(`| ${d.label} \`${d.key}\` | ${cell} |`);
     }
     lines.push("");
   }
   if (cov.outOfScopeRoutes.length > 0) {
-    lines.push(
-      `Out of scope (not counted): ${cov.outOfScopeRoutes.map((r) => `\`${r}\``).join(", ")}`,
-      "",
-    );
+    lines.push(`Out of scope (not counted): ${cov.outOfScopeRoutes.map((r) => `\`${r}\``).join(", ")}`, "");
   }
   return lines.join("\n");
 }
 
 function findingBlock(f: QaFinding): string {
-  const lines = [
-    `### ${SEVERITY_EMOJI[f.severity]} ${f.title} · \`${f.area}\``,
-    "",
-  ];
+  const lines = [`### ${SEVERITY_EMOJI[f.severity]} ${f.title} · \`${f.area}\``, ""];
   if (f.description) lines.push(f.description, "");
   if (f.steps) lines.push(`**Steps:** ${f.steps}`);
   if (f.expected || f.actual) {
-    lines.push(
-      `**Expected:** ${f.expected || "—"}`,
-      `**Actual:** ${f.actual || "—"}`,
-    );
+    lines.push(`**Expected:** ${f.expected || "—"}`, `**Actual:** ${f.actual || "—"}`);
   }
   return lines.join("\n");
 }
@@ -855,21 +742,13 @@ export function buildReport(opts: ReportOptions): string {
   const findings = sortFindings(dedupeFindings(opts.findings));
   const counts = severityCounts(findings);
   const label =
-    opts.mode === "full"
-      ? "full-app sweep"
-      : opts.mode === "focus"
-        ? "focused run"
-        : opts.mode === "i18n"
-          ? "i18n sweep"
-          : opts.mode === "offline"
-            ? "offline probe"
-            : "scoped to PR changes";
+    opts.mode === "full" ? "full-app sweep" :
+    opts.mode === "focus" ? "focused run" :
+    opts.mode === "i18n" ? "i18n sweep" :
+    opts.mode === "offline" ? "offline probe" :
+    "scoped to PR changes";
 
-  const parts = [
-    `## 🕵️ QA exploration · ${label}`,
-    "",
-    `**Target:** ${opts.targetUrl}`,
-  ];
+  const parts = [`## 🕵️ QA exploration · ${label}`, "", `**Target:** ${opts.targetUrl}`];
   if (opts.scopeNote) parts.push(opts.scopeNote);
   if (opts.replayUrl) {
     parts.push(
@@ -896,15 +775,7 @@ export function buildReport(opts: ReportOptions): string {
   if (opts.summary) {
     // Inline <details> (this module stays import-free) so the agent's coverage
     // narrative is available but doesn't dominate the findings.
-    parts.push(
-      "<details>",
-      "<summary>🧭 What the agent exercised</summary>",
-      "",
-      opts.summary,
-      "",
-      "</details>",
-      "",
-    );
+    parts.push("<details>", "<summary>🧭 What the agent exercised</summary>", "", opts.summary, "", "</details>", "");
   }
 
   if (opts.i18n && opts.i18n.length > 0) {
@@ -912,10 +783,7 @@ export function buildReport(opts: ReportOptions): string {
   }
 
   if (opts.offline) {
-    parts.push(
-      renderOfflineProbe(opts.offline.errors, opts.offline.offlineTurns),
-      "",
-    );
+    parts.push(renderOfflineProbe(opts.offline.errors, opts.offline.offlineTurns), "");
   }
 
   if (opts.downloads && opts.downloads.length > 0) {
@@ -929,9 +797,7 @@ export function buildReport(opts: ReportOptions): string {
   if (opts.metrics) {
     const m = opts.metrics;
     const cost =
-      m.costUsd === null
-        ? "—"
-        : `~$${m.costUsd < 0.01 ? m.costUsd.toFixed(4) : m.costUsd.toFixed(2)}`;
+      m.costUsd === null ? "—" : `~$${m.costUsd < 0.01 ? m.costUsd.toFixed(4) : m.costUsd.toFixed(2)}`;
     const findingsCell =
       findings.length === 0
         ? "none"

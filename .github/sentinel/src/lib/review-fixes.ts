@@ -7,14 +7,8 @@ import { details } from "./markdown.js";
  * This matches GitHub's fenced-code-block rule so inner backtick runs cannot
  * terminate the outer fence early.
  */
-function safeFence(
-  lang: string,
-  content: string,
-): [open: string, close: string] {
-  const longest = Math.max(
-    0,
-    ...(content.match(/`+/g) ?? []).map((r) => r.length),
-  );
+function safeFence(lang: string, content: string): [open: string, close: string] {
+  const longest = Math.max(0, ...(content.match(/`+/g) ?? []).map((r) => r.length));
   const n = Math.max(3, longest + 1);
   const ticks = "`".repeat(n);
   return [`${ticks}${lang}`, ticks];
@@ -45,12 +39,7 @@ export function renderFixApproaches(fixes: FixApproach[]): string {
 
     parts.push(`**${f.title}** — ${f.description}`);
     parts.push(`${openFence}\n${f.snippet}\n${closeFence}`);
-    parts.push(
-      details(
-        "📋 Copy as prompt",
-        `${promptOpen}\n${f.prompt}\n${promptClose}`,
-      ),
-    );
+    parts.push(details("📋 Copy as prompt", `${promptOpen}\n${f.prompt}\n${promptClose}`));
 
     if (i < fixes.length - 1) parts.push("");
   }

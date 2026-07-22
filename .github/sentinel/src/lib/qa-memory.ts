@@ -10,23 +10,12 @@ import { DEFAULT_MODEL_KEY, MODELS, getClient } from "./openrouter.js";
 const MEMORY_PATH = ".github/sentinel/QA-MEMORY.md";
 
 /** The current memory + its blob sha (needed to update it). Empty on first run. */
-export async function readMemory(): Promise<{
-  content: string;
-  sha: string | undefined;
-}> {
+export async function readMemory(): Promise<{ content: string; sha: string | undefined }> {
   try {
-    const res = await octokit.rest.repos.getContent({
-      owner,
-      repo,
-      path: MEMORY_PATH,
-      ref: "main",
-    });
+    const res = await octokit.rest.repos.getContent({ owner, repo, path: MEMORY_PATH, ref: "main" });
     const data = res.data as { content?: string; sha?: string };
     if (data.content) {
-      return {
-        content: Buffer.from(data.content, "base64").toString("utf8"),
-        sha: data.sha,
-      };
+      return { content: Buffer.from(data.content, "base64").toString("utf8"), sha: data.sha };
     }
   } catch {
     /* 404 → no memory yet */
@@ -36,10 +25,7 @@ export async function readMemory(): Promise<{
 
 /** Commit the updated memory to `main` with `[skip ci]` (so it doesn't trigger
  *  semantic-release or re-run CI). Best-effort; returns whether it landed. */
-export async function writeMemory(
-  content: string,
-  sha: string | undefined,
-): Promise<boolean> {
+export async function writeMemory(content: string, sha: string | undefined): Promise<boolean> {
   try {
     await octokit.rest.repos.createOrUpdateFileContents({
       owner,
@@ -52,9 +38,7 @@ export async function writeMemory(
     });
     return true;
   } catch (err) {
-    core.warning(
-      `QA memory write failed: ${err instanceof Error ? err.message : String(err)}`,
-    );
+    core.warning(`QA memory write failed: ${err instanceof Error ? err.message : String(err)}`);
     return false;
   }
 }
@@ -79,9 +63,7 @@ export function parseLedger(memory: string): Record<string, string> {
   const m = /```qa-coverage\s*([\s\S]*?)```/.exec(memory);
   if (!m) return {};
   try {
-    return (
-      (JSON.parse(m[1]) as { routes?: Record<string, string> }).routes ?? {}
-    );
+    return (JSON.parse(m[1]) as { routes?: Record<string, string> }).routes ?? {};
   } catch {
     return {};
   }
@@ -96,17 +78,9 @@ export function parseLedger(memory: string): Record<string, string> {
  *  applied FIRST, so history survives even if the LLM-synthesized memory drops the
  *  fenced block. Routes parsed from the block overlay the seed; `coveredPaths`
  *  overlay both. */
-export function upsertLedger(
-  memory: string,
-  coveredPaths: string[],
-  date: string,
-  seedRoutes?: Record<string, string>,
-): string {
+export function upsertLedger(memory: string, coveredPaths: string[], date: string, seedRoutes?: Record<string, string>): string {
   const fromBlock = parseLedger(memory);
-  const routes: Record<string, string> = {
-    ...(seedRoutes ?? {}),
-    ...fromBlock,
-  };
+  const routes: Record<string, string> = { ...(seedRoutes ?? {}), ...fromBlock };
   for (const p of coveredPaths) routes[p] = date;
   const block = "```qa-coverage\n" + JSON.stringify({ routes }) + "\n```";
   const hasBlock = /```qa-coverage/.test(memory);
@@ -116,10 +90,7 @@ export function upsertLedger(
 
 /** Merge this run's facts into the existing memory via a cheap model. Returns the
  *  full updated markdown (or the existing memory unchanged if synthesis fails). */
-export async function synthesizeMemory(
-  existing: string,
-  facts: RunFacts,
-): Promise<string> {
+export async function synthesizeMemory(existing: string, facts: RunFacts): Promise<string> {
   const prompt = [
     "You maintain a living QA memory for a web app — used to make each exploratory QA run smarter.",
     "Update the memory with what THIS run learned, then return ONLY the full updated markdown (no preamble).",
@@ -140,33 +111,24 @@ export async function synthesizeMemory(
     `Paths visited: ${facts.paths.join(", ") || "—"}`,
     `Findings: ${facts.findings.join(" | ") || "none"}`,
     `Agent's coverage summary: ${facts.summary || "—"}`,
-    facts.coverage
-      ? `Coverage this run: ${facts.coverage.covered}/${facts.coverage.total} (${facts.coverage.pct}%)`
-      : "Coverage: n/a",
+    facts.coverage ? `Coverage this run: ${facts.coverage.covered}/${facts.coverage.total} (${facts.coverage.pct}%)` : "Coverage: n/a",
     "",
     "### Existing memory (update this)",
-    existing ||
-      "(empty — create it from scratch, with the four sections above)",
+    existing || "(empty — create it from scratch, with the four sections above)",
   ].join("\n");
   try {
     const resp = await getClient().chat.completions.create({
       model: MODELS[DEFAULT_MODEL_KEY].slug,
       max_tokens: 4000,
       messages: [
-        {
-          role: "system",
-          content:
-            "You curate a concise, deduplicated QA knowledge base. Output only the markdown.",
-        },
+        { role: "system", content: "You curate a concise, deduplicated QA knowledge base. Output only the markdown." },
         { role: "user", content: prompt },
       ],
     });
     const out = resp.choices[0]?.message?.content?.trim();
     return out && out.length > 0 ? out : existing;
   } catch (err) {
-    core.warning(
-      `QA memory synthesis failed: ${err instanceof Error ? err.message : String(err)}`,
-    );
+    core.warning(`QA memory synthesis failed: ${err instanceof Error ? err.message : String(err)}`);
     return existing;
   }
 }

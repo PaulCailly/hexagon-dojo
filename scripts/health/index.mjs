@@ -9,32 +9,28 @@
  * (informational, like the previous code-health step).
  */
 
-import fs from "node:fs";
-import path from "node:path";
+import fs from 'node:fs';
+import path from 'node:path';
 
-import { config } from "./config.mjs";
-import { analyzeSource, band } from "./analyze.mjs";
+import { config } from './config.mjs';
+import { analyzeSource, band } from './analyze.mjs';
 
 function arg(flag, fallback) {
   const i = process.argv.indexOf(flag);
   return i !== -1 && process.argv[i + 1] ? process.argv[i + 1] : fallback;
 }
 
-const srcDir =
-  process.argv[2] && !process.argv[2].startsWith("--")
-    ? process.argv[2]
-    : "src";
-const jsonOut = arg("--json", ".health/health.json");
-const jscpdPath = arg(
-  "--jscpd",
-  ".health/code-duplication-audit/jscpd-report.json",
-);
+const srcDir = process.argv[2] && !process.argv[2].startsWith('--')
+  ? process.argv[2]
+  : 'src';
+const jsonOut = arg('--json', '.health/health.json');
+const jscpdPath = arg('--jscpd', '.health/code-duplication-audit/jscpd-report.json');
 
 /** All analyzable files under `dir`, as src-relative POSIX paths. */
 function listFiles(dir) {
   const out = [];
   for (const entry of fs.readdirSync(dir, { recursive: true })) {
-    const rel = String(entry).split(path.sep).join("/");
+    const rel = String(entry).split(path.sep).join('/');
     if (config.include.test(rel) && !config.exclude.test(rel)) {
       out.push(rel);
     }
@@ -47,11 +43,11 @@ function listFiles(dir) {
  *  also surface them src-prefixed or absolute depending on version/invocation —
  *  so strip everything up to and including the `<srcRoot>/` segment, else use as-is. */
 function toSrcRelative(name, srcRoot) {
-  const norm = String(name).split(path.sep).join("/");
-  const marker = `${srcRoot.split(path.sep).join("/")}/`;
+  const norm = String(name).split(path.sep).join('/');
+  const marker = `${srcRoot.split(path.sep).join('/')}/`;
   const idx = norm.lastIndexOf(marker);
   const rel = idx >= 0 ? norm.slice(idx + marker.length) : norm;
-  return rel.replace(/^\.?\//, "");
+  return rel.replace(/^\.?\//, '');
 }
 
 /** Map of src-relative file -> duplicated line count, from a jscpd JSON report. */
@@ -59,15 +55,15 @@ function loadDuplication(reportPath, srcRoot) {
   if (!fs.existsSync(reportPath)) {
     return new Map();
   }
-  const report = JSON.parse(fs.readFileSync(reportPath, "utf8"));
+  const report = JSON.parse(fs.readFileSync(reportPath, 'utf8'));
   const dup = new Map();
   const bump = (name, lines) => {
     const rel = toSrcRelative(name, srcRoot);
     dup.set(rel, (dup.get(rel) ?? 0) + lines);
   };
   for (const d of report.duplicates ?? []) {
-    bump(d.firstFile?.name ?? "", d.lines ?? 0);
-    bump(d.secondFile?.name ?? "", d.lines ?? 0);
+    bump(d.firstFile?.name ?? '', d.lines ?? 0);
+    bump(d.secondFile?.name ?? '', d.lines ?? 0);
   }
   return dup;
 }
@@ -90,7 +86,7 @@ if (fs.existsSync(jscpdPath) && duplication.size > 0) {
 
 const results = files
   .map((rel) => {
-    const source = fs.readFileSync(path.join(srcDir, rel), "utf8");
+    const source = fs.readFileSync(path.join(srcDir, rel), 'utf8');
     return analyzeSource(rel, source, config, duplication.get(rel) ?? 0);
   })
   .sort((a, b) => a.score - b.score);
@@ -125,11 +121,9 @@ fs.mkdirSync(path.dirname(jsonOut), { recursive: true });
 fs.writeFileSync(jsonOut, JSON.stringify(output, null, 2));
 
 // --- human summary ---
-console.log(
-  `\nCode health: ${score}/100 (${output.band}) — ${results.length} files, ${totalSloc} SLOC`,
-);
+console.log(`\nCode health: ${score}/100 (${output.band}) — ${results.length} files, ${totalSloc} SLOC`);
 console.log(`Findings: ${findings.length}  ${JSON.stringify(byRule)}`);
-console.log("\nLowest-scoring files:");
+console.log('\nLowest-scoring files:');
 for (const r of results.slice(0, 12)) {
   console.log(`  ${String(r.score).padStart(3)}  ${r.file}  (-${r.penalty})`);
 }

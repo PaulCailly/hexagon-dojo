@@ -6,11 +6,11 @@
  * unit-tested directly.
  */
 
-import ts from "typescript";
+import ts from 'typescript';
 
 /** Physical SLOC: non-blank lines (a simple, stable size proxy). */
 export function physicalLoc(text) {
-  return text.split("\n").filter((line) => line.trim() !== "").length;
+  return text.split('\n').filter((line) => line.trim() !== '').length;
 }
 
 const FUNCTION_KINDS = new Set([
@@ -106,24 +106,16 @@ function functionName(fn) {
     return fn.name.text;
   }
   if (fn.kind === ts.SyntaxKind.Constructor) {
-    return "constructor";
+    return 'constructor';
   }
   const parent = fn.parent;
-  if (
-    parent &&
-    ts.isVariableDeclaration(parent) &&
-    ts.isIdentifier(parent.name)
-  ) {
+  if (parent && ts.isVariableDeclaration(parent) && ts.isIdentifier(parent.name)) {
     return parent.name.text;
   }
-  if (
-    parent &&
-    ts.isPropertyAssignment(parent) &&
-    ts.isIdentifier(parent.name)
-  ) {
+  if (parent && ts.isPropertyAssignment(parent) && ts.isIdentifier(parent.name)) {
     return parent.name.text;
   }
-  return "(anonymous)";
+  return '(anonymous)';
 }
 
 /** First tier whose `over` is exceeded (tiers are largest-first), or undefined. */
@@ -141,13 +133,12 @@ export function analyzeSource(file, source, config, duplicatedLines = 0) {
     source,
     ts.ScriptTarget.Latest,
     /* setParentNodes */ true,
-    file.endsWith(".tsx") ? ts.ScriptKind.TSX : ts.ScriptKind.TS,
+    file.endsWith('.tsx') ? ts.ScriptKind.TSX : ts.ScriptKind.TS,
   );
 
   const findings = [];
   const lineOf = (node) =>
-    sourceFile.getLineAndCharacterOfPosition(node.getStart(sourceFile)).line +
-    1;
+    sourceFile.getLineAndCharacterOfPosition(node.getStart(sourceFile)).line + 1;
 
   const add = (line, fn, rule, value, hit) => {
     if (hit) {
@@ -170,40 +161,31 @@ export function analyzeSource(file, source, config, duplicatedLines = 0) {
       const { cyclomatic, maxDepth } = functionMetrics(node);
       const loc = physicalLoc(node.getText(sourceFile));
       const params = node.parameters.length;
-      add(
-        line,
-        name,
-        "cyclomatic",
-        cyclomatic,
-        tier(cyclomatic, config.cyclomatic),
-      );
-      add(line, name, "functionLoc", loc, tier(loc, config.functionLoc));
-      add(line, name, "nesting", maxDepth, tier(maxDepth, config.nesting));
-      add(line, name, "params", params, tier(params, config.params));
+      add(line, name, 'cyclomatic', cyclomatic, tier(cyclomatic, config.cyclomatic));
+      add(line, name, 'functionLoc', loc, tier(loc, config.functionLoc));
+      add(line, name, 'nesting', maxDepth, tier(maxDepth, config.nesting));
+      add(line, name, 'params', params, tier(params, config.params));
     }
     ts.forEachChild(node, collect);
   };
   collect(sourceFile);
 
   const sloc = physicalLoc(source);
-  add(1, null, "fileLoc", sloc, tier(sloc, config.fileLoc));
+  add(1, null, 'fileLoc', sloc, tier(sloc, config.fileLoc));
 
   if (duplicatedLines > 0) {
     const { perLines, points, cap } = config.duplication;
-    const dupPoints = Math.min(
-      cap,
-      Math.ceil(duplicatedLines / perLines) * points,
-    );
+    const dupPoints = Math.min(cap, Math.ceil(duplicatedLines / perLines) * points);
     findings.push({
       file,
       line: 1,
       fn: null,
-      rule: "duplication",
+      rule: 'duplication',
       value: duplicatedLines,
       points: dupPoints,
       // Severity tracks magnitude (like the tiered rules) rather than being
       // fixed: a file at the cap is 'high', a little duplication is 'elevated'.
-      severity: dupPoints >= cap ? "high" : "elevated",
+      severity: dupPoints >= cap ? 'high' : 'elevated',
     });
   }
 
@@ -215,7 +197,7 @@ export function analyzeSource(file, source, config, duplicatedLines = 0) {
 /** Score label for the report, by config bands. */
 export function band(score, bands) {
   if (score >= bands.good) {
-    return "good";
+    return 'good';
   }
-  return score >= bands.moderate ? "moderate" : "poor";
+  return score >= bands.moderate ? 'moderate' : 'poor';
 }

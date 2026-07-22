@@ -15,16 +15,8 @@ export interface ModelFailure {
   error: string;
 }
 
-const SEVERITY_RANK: Record<Severity, number> = {
-  error: 3,
-  warning: 2,
-  info: 1,
-};
-const SEVERITY_EMOJI: Record<Severity, string> = {
-  error: "🔴",
-  warning: "🟠",
-  info: "🔵",
-};
+const SEVERITY_RANK: Record<Severity, number> = { error: 3, warning: 2, info: 1 };
+const SEVERITY_EMOJI: Record<Severity, string> = { error: "🔴", warning: "🟠", info: "🔵" };
 
 /** Findings on the same file within this many lines are treated as the same issue.
  *  Different models rarely land on the exact same line for one bug, so a small
@@ -45,10 +37,7 @@ interface Cluster {
 }
 
 function normTitle(t: string): string {
-  return t
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, " ")
-    .trim();
+  return t.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
 }
 
 /**
@@ -72,10 +61,7 @@ export function clusterFindings(runs: ModelRun[]): Cluster[] {
   for (const [path, items] of byPath) {
     // Line-anchored findings: sort by line, merge while within the window of the anchor.
     const numbered = items
-      .filter(
-        (i): i is { key: string; f: Finding & { line: number } } =>
-          i.f.line !== null,
-      )
+      .filter((i): i is { key: string; f: Finding & { line: number } } => i.f.line !== null)
       .sort((a, b) => a.f.line - b.f.line);
 
     let current: Cluster | null = null;
@@ -88,13 +74,7 @@ export function clusterFindings(runs: ModelRun[]): Cluster[] {
           current.title = f.title;
         }
       } else {
-        current = {
-          path,
-          line: f.line,
-          title: f.title,
-          severity: f.severity,
-          models: new Set([key]),
-        };
+        current = { path, line: f.line, title: f.title, severity: f.severity, models: new Set([key]) };
         clusters.push(current);
         anchor = f.line;
       }
@@ -107,13 +87,7 @@ export function clusterFindings(runs: ModelRun[]): Cluster[] {
       const nt = normTitle(f.title);
       let c = fileLevel.get(nt);
       if (!c) {
-        c = {
-          path,
-          line: null,
-          title: f.title,
-          severity: f.severity,
-          models: new Set(),
-        };
+        c = { path, line: null, title: f.title, severity: f.severity, models: new Set() };
         fileLevel.set(nt, c);
         clusters.push(c);
       }
@@ -130,23 +104,17 @@ export function clusterFindings(runs: ModelRun[]): Cluster[] {
 // Escape the characters that would break a markdown table cell: pipes (column
 // separators) and backticks (LLM titles often mention `foo()`), and collapse
 // whitespace so a multi-line value can't spill across rows.
-const cell = (s: string) =>
-  s.replace(/[|`]/g, "\\$&").replace(/\s+/g, " ").trim();
+const cell = (s: string) => s.replace(/[|`]/g, "\\$&").replace(/\s+/g, " ").trim();
 
 function pct(n: number, d: number): string {
   return d === 0 ? "n/a" : `${Math.round((100 * n) / d)}%`;
 }
 
 /** Per-model scorecard: finding counts, consensus agreement, tokens, cost, status. */
-function scorecard(
-  runs: ModelRun[],
-  failures: ModelFailure[],
-  clusters: Cluster[],
-): string {
+function scorecard(runs: ModelRun[], failures: ModelFailure[], clusters: Cluster[]): string {
   const consensus = clusters.filter((c) => c.models.size >= 2);
   const hits = new Map<string, number>();
-  for (const c of consensus)
-    for (const k of c.models) hits.set(k, (hits.get(k) ?? 0) + 1);
+  for (const c of consensus) for (const k of c.models) hits.set(k, (hits.get(k) ?? 0) + 1);
 
   const rows = [
     "| Model | 🔴 | 🟠 | 🔵 | Total | Consensus hits | Agreement | Tokens (in/out) | Cost | Turns | Status |",
@@ -167,9 +135,7 @@ function scorecard(
     );
   }
   for (const fail of failures) {
-    rows.push(
-      `| \`${fail.model.key}\` ${fail.model.label} | — | — | — | — | — | — | — | — | — | ❌ ${cell(fail.error.slice(0, 80))} |`,
-    );
+    rows.push(`| \`${fail.model.key}\` ${fail.model.label} | — | — | — | — | — | — | — | — | — | ❌ ${cell(fail.error.slice(0, 80))} |`);
   }
 
   return rows.join("\n");
@@ -179,11 +145,7 @@ function scorecard(
 function overlapMatrix(runs: ModelRun[], clusters: Cluster[]): string {
   const consensus = clusters
     .filter((c) => c.models.size >= 2)
-    .sort(
-      (a, b) =>
-        b.models.size - a.models.size ||
-        SEVERITY_RANK[b.severity] - SEVERITY_RANK[a.severity],
-    );
+    .sort((a, b) => b.models.size - a.models.size || SEVERITY_RANK[b.severity] - SEVERITY_RANK[a.severity]);
 
   if (consensus.length === 0) {
     return "_No issue was flagged by more than one model — every finding was unique to a single reviewer._";
@@ -199,9 +161,7 @@ function overlapMatrix(runs: ModelRun[], clusters: Cluster[]): string {
   for (const c of consensus) {
     const loc = c.line === null ? c.path : `${c.path}:${c.line}`;
     const marks = keys.map((k) => (c.models.has(k) ? "✓" : "·"));
-    rows.push(
-      `| \`${cell(loc)}\` — ${cell(c.title)} | ${SEVERITY_EMOJI[c.severity]} | ${c.models.size} | ${marks.join(" | ")} |`,
-    );
+    rows.push(`| \`${cell(loc)}\` — ${cell(c.title)} | ${SEVERITY_EMOJI[c.severity]} | ${c.models.size} | ${marks.join(" | ")} |`);
   }
 
   return rows.join("\n");
@@ -213,10 +173,7 @@ function overlapMatrix(runs: ModelRun[], clusters: Cluster[]): string {
  * post it. The clustering is a deterministic heuristic (see `clusterFindings`),
  * so the overlap numbers are approximate by design.
  */
-export function buildBenchmark(
-  runs: ModelRun[],
-  failures: ModelFailure[],
-): string {
+export function buildBenchmark(runs: ModelRun[], failures: ModelFailure[]): string {
   const clusters = clusterFindings(runs);
   const consensus = clusters.filter((c) => c.models.size >= 2).length;
   const totalModels = runs.length + failures.length;
@@ -231,9 +188,7 @@ export function buildBenchmark(
     else knownCost += c;
   }
   const costLabel =
-    unpriced === 0
-      ? `**$${knownCost.toFixed(3)}**`
-      : `**$${knownCost.toFixed(3)}** + ${unpriced} unpriced model(s)`;
+    unpriced === 0 ? `**$${knownCost.toFixed(3)}**` : `**$${knownCost.toFixed(3)}** + ${unpriced} unpriced model(s)`;
 
   return [
     "### 📊 Model benchmark",
@@ -247,8 +202,8 @@ export function buildBenchmark(
     "",
     "#### Finding overlap",
     "",
-    "_Each row is an issue flagged by ≥2 models. ✓ = that model raised it. Findings within " +
-      `${LINE_WINDOW} lines on the same file are treated as the same issue, so overlap is approximate._`,
+    "_Each row is an issue flagged by ≥2 models. ✓ = that model raised it. Findings within "
+      + `${LINE_WINDOW} lines on the same file are treated as the same issue, so overlap is approximate._`,
     "",
     overlapMatrix(runs, clusters),
   ].join("\n");

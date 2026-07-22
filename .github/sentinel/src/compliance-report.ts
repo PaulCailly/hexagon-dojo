@@ -47,19 +47,9 @@ async function readReport(file: string): Promise<ComplianceData | null> {
   }
 }
 
-const SEV_EMOJI: Record<string, string> = {
-  violation: "⛔",
-  high: "🟠",
-  medium: "🟡",
-  low: "🔵",
-};
+const SEV_EMOJI: Record<string, string> = { violation: "⛔", high: "🟠", medium: "🟡", low: "🔵" };
 const STATUS_EMOJI: Record<string, string> = {
-  pass: "✅",
-  fail: "❌",
-  attested: "✅",
-  partial: "🟡",
-  pending: "⏳",
-  manual: "📝",
+  pass: "✅", fail: "❌", attested: "✅", partial: "🟡", pending: "⏳", manual: "📝",
 };
 
 function kpiBlock(k: Record<string, number>): string {
@@ -85,49 +75,32 @@ function kpiBlock(k: Record<string, number>): string {
 }
 
 function findingsBlock(findings: Finding[]): string {
-  if (findings.length === 0)
-    return "No findings — every scanned file is clean. ✅";
+  if (findings.length === 0) return "No findings — every scanned file is clean. ✅";
   const rows = findings.map(
     (f) =>
       `| ${SEV_EMOJI[f.severity] ?? ""} ${f.severity} | \`${f.file}${f.line ? `:${f.line}` : ""}\` | \`${f.rule}\` | ${f.message} |`,
   );
   return details(
     `🔎 Findings (${findings.length})`,
-    [
-      "| Severity | Location | Rule | Detail |",
-      "| --- | --- | --- | --- |",
-      ...rows,
-    ].join("\n"),
+    ["| Severity | Location | Rule | Detail |", "| --- | --- | --- | --- |", ...rows].join("\n"),
   );
 }
 
 function controlsBlock(controls: Control[]): string {
   const rows = controls.map(
-    (c) =>
-      `| ${STATUS_EMOJI[c.status] ?? ""} ${c.status} | \`${c.id}\` | ${c.family} | ${c.title} |`,
+    (c) => `| ${STATUS_EMOJI[c.status] ?? ""} ${c.status} | \`${c.id}\` | ${c.family} | ${c.title} |`,
   );
   return details(
     `🛡️ Control register (${controls.length})`,
-    [
-      "| Status | ID | Family | Control |",
-      "| --- | --- | --- | --- |",
-      ...rows,
-    ].join("\n"),
+    ["| Status | ID | Family | Control |", "| --- | --- | --- | --- |", ...rows].join("\n"),
   );
 }
 
 function buildReport(data: ComplianceData | null): string {
   if (!data) {
-    return [
-      MARKER,
-      "## 🔐 Privacy & Compliance",
-      "",
-      "_Compliance report unavailable for this run._",
-    ].join("\n");
+    return [MARKER, "## 🔐 Privacy & Compliance", "", "_Compliance report unavailable for this run._"].join("\n");
   }
-  const verdict = data.pass
-    ? "✅ PASS"
-    : "⛔ FAIL — privacy violation(s) present";
+  const verdict = data.pass ? "✅ PASS" : "⛔ FAIL — privacy violation(s) present";
   const k = data.kpis;
   return [
     MARKER,
@@ -152,8 +125,7 @@ function buildReport(data: ComplianceData | null): string {
 }
 
 async function run(): Promise<void> {
-  const reportPath =
-    process.env.COMPLIANCE_REPORT ?? ".compliance/compliance.json";
+  const reportPath = process.env.COMPLIANCE_REPORT ?? ".compliance/compliance.json";
   const data = await readReport(reportPath);
   const body = buildReport(data);
 
@@ -161,8 +133,7 @@ async function run(): Promise<void> {
     await appendFile(process.env.GITHUB_STEP_SUMMARY, `${body}\n`);
   }
 
-  const prNumber =
-    context.payload.pull_request?.number ?? context.payload.issue?.number;
+  const prNumber = context.payload.pull_request?.number ?? context.payload.issue?.number;
   if (!prNumber) {
     core.info("No pull request in context; wrote the job summary only.");
     return;

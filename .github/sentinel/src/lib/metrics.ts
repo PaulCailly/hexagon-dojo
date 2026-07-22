@@ -112,9 +112,7 @@ export async function collectHealth(
   reportDir: string,
   changedFiles: string[] | null,
 ): Promise<HealthData | null> {
-  const raw = (await readJson(
-    path.join(reportDir, "health.json"),
-  )) as RawHealth | null;
+  const raw = (await readJson(path.join(reportDir, "health.json"))) as RawHealth | null;
   if (!raw || !Array.isArray(raw.perFile)) return null;
 
   const changed = changedFiles ? new Set(changedFiles.map(canon)) : null;
@@ -144,8 +142,7 @@ export async function collectHealth(
   let score: number | null;
   let band: string | null;
   if (changed) {
-    const weighted =
-      files.reduce((s, f) => s + f.score * f.sloc, 0) / (totalSloc || 1);
+    const weighted = files.reduce((s, f) => s + f.score * f.sloc, 0) / (totalSloc || 1);
     score = Math.round(weighted);
     band = rating(score);
   } else {
@@ -198,9 +195,7 @@ export async function buildHealthMetrics(
     "Per-file health (score out of 100, then the specific findings):",
   ];
   for (const f of files) {
-    promptParts.push(
-      `- ${f.file}: ${f.score}/100 (${rating(f.score)}), ${f.sloc} sloc`,
-    );
+    promptParts.push(`- ${f.file}: ${f.score}/100 (${rating(f.score)}), ${f.sloc} sloc`);
     for (const fd of f.findings) {
       const where = fd.fn ? ` in \`${fd.fn}\`` : "";
       promptParts.push(

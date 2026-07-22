@@ -34,10 +34,7 @@ function defaultPanel(): ModelSpec[] {
  * motion (everything to the end). Fewer than two distinct models → default panel.
  */
 export function parseDebateCommand(body: string): ParsedDebate {
-  const after = body
-    .trim()
-    .replace(/^\/debate\b/i, "")
-    .trim();
+  const after = body.trim().replace(/^\/debate\b/i, "").trim();
   const tokens = after.split(/\s+/).filter(Boolean);
 
   let deep = false;
@@ -87,17 +84,9 @@ export function parseDebateCommand(body: string): ParsedDebate {
 /** Resolve the motion text into its config, choosing the verdict vocabulary. */
 export function motionFor(motion: string | null): MotionConfig {
   if (!motion || !motion.trim()) {
-    return {
-      motion: DEFAULT_MOTION,
-      isDefault: true,
-      verdicts: ["APPROVE", "REQUEST_CHANGES", "ABSTAIN"],
-    };
+    return { motion: DEFAULT_MOTION, isDefault: true, verdicts: ["APPROVE", "REQUEST_CHANGES", "ABSTAIN"] };
   }
-  return {
-    motion: motion.trim(),
-    isDefault: false,
-    verdicts: ["FOR", "AGAINST", "ABSTAIN"],
-  };
+  return { motion: motion.trim(), isDefault: false, verdicts: ["FOR", "AGAINST", "ABSTAIN"] };
 }
 
 export interface Vote {
@@ -117,8 +106,7 @@ export interface Tally {
 
 function outcomeLabel(winner: string | null, cfg: MotionConfig): string {
   if (!winner) return "split — no consensus";
-  if (cfg.isDefault)
-    return winner === "APPROVE" ? "merge favored" : "changes requested";
+  if (cfg.isDefault) return winner === "APPROVE" ? "merge favored" : "changes requested";
   return winner === "FOR" ? "motion carries" : "motion fails";
 }
 
@@ -137,8 +125,7 @@ export function tally(votes: Vote[], cfg: MotionConfig): Tally {
     .map((v) => ({ v, n: counts[v] }))
     .sort((a, b) => b.n - a.n);
   const top = substantive[0];
-  const tie =
-    substantive.length > 1 && Boolean(top) && substantive[1].n === top.n;
+  const tie = substantive.length > 1 && Boolean(top) && substantive[1].n === top.n;
   const decided = Boolean(top && top.n > 0 && !tie);
   const winner = decided ? top.v : null;
 

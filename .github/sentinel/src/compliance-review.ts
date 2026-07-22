@@ -33,17 +33,10 @@ const DEFAULT_COMPLIANCE_KEY = "opus";
  * a registered alias, a raw `provider/slug` (pricing unknown), else the default.
  */
 function resolveModel(commentBody: string): ModelSpec {
-  const after = commentBody
-    .trim()
-    .replace(/^\/compliance\b/i, "")
-    .trim();
-  for (const t of after
-    .split(/\s+/)
-    .filter(Boolean)
-    .map((s) => s.toLowerCase())) {
+  const after = commentBody.trim().replace(/^\/compliance\b/i, "").trim();
+  for (const t of after.split(/\s+/).filter(Boolean).map((s) => s.toLowerCase())) {
     if (MODELS[t]) return MODELS[t];
-    if (t.includes("/"))
-      return { key: t, slug: t, label: t, input: NaN, output: NaN };
+    if (t.includes("/")) return { key: t, slug: t, label: t, input: NaN, output: NaN };
   }
   return MODELS[DEFAULT_COMPLIANCE_KEY];
 }
@@ -54,11 +47,7 @@ const MAX_READS = 50;
 
 type RiskSeverity = "blocker" | "high" | "medium" | "low" | "info";
 const RISK_EMOJI: Record<RiskSeverity, string> = {
-  blocker: "⛔",
-  high: "🟠",
-  medium: "🟡",
-  low: "🔵",
-  info: "⚪",
+  blocker: "⛔", high: "🟠", medium: "🟡", low: "🔵", info: "⚪",
 };
 
 interface ComplianceRisk {
@@ -82,53 +71,23 @@ const AUDIT_SCHEMA = {
     verdict: {
       type: "string",
       enum: ["pass", "concerns", "fail"],
-      description:
-        "pass = no privacy/compliance issues; concerns = tracked risks worth noting; fail = a likely breach of the governed-egress / consent / minimisation guarantees.",
+      description: "pass = no privacy/compliance issues; concerns = tracked risks worth noting; fail = a likely breach of the governed-egress / consent / minimisation guarantees.",
     },
-    summary: {
-      type: "string",
-      description:
-        "2-4 sentences on how this change affects the app's privacy posture and compliance.",
-    },
+    summary: { type: "string", description: "2-4 sentences on how this change affects the app's privacy posture and compliance." },
     risks: {
       type: "array",
       items: {
         type: "object",
         additionalProperties: false,
         properties: {
-          severity: {
-            type: "string",
-            enum: ["blocker", "high", "medium", "low", "info"],
-          },
-          area: {
-            type: "string",
-            description:
-              "e.g. egress, secrets, consent, minimisation, data-subject-rights, retention, sub-processors.",
-          },
+          severity: { type: "string", enum: ["blocker", "high", "medium", "low", "info"] },
+          area: { type: "string", description: "e.g. egress, secrets, consent, minimisation, data-subject-rights, retention, sub-processors." },
           title: { type: "string" },
-          detail: {
-            type: "string",
-            description:
-              "What the change does and why it is (or isn't) a privacy/compliance concern.",
-          },
-          recommendation: {
-            type: "string",
-            description: "Concrete fix or the attestation needed.",
-          },
-          standards: {
-            type: "string",
-            description:
-              "Relevant clause(s), e.g. 'GDPR Art. 9(2)(a); ISO 27701 §7.2.3'. Empty if none.",
-          },
+          detail: { type: "string", description: "What the change does and why it is (or isn't) a privacy/compliance concern." },
+          recommendation: { type: "string", description: "Concrete fix or the attestation needed." },
+          standards: { type: "string", description: "Relevant clause(s), e.g. 'GDPR Art. 9(2)(a); ISO 27701 §7.2.3'. Empty if none." },
         },
-        required: [
-          "severity",
-          "area",
-          "title",
-          "detail",
-          "recommendation",
-          "standards",
-        ],
+        required: ["severity", "area", "title", "detail", "recommendation", "standards"],
       },
     },
   },
@@ -140,13 +99,8 @@ const TOOLS: OpenAI.Chat.Completions.ChatCompletionTool[] = [
     type: "function",
     function: {
       name: "read_file",
-      description:
-        "Read a file at the PR's head commit — config (scripts/compliance/config.mjs, controls.mjs), the changed files, the analytics sanitiser/seam, services wiring, api/ handlers, docs/15 — whatever you need to judge the data flows.",
-      parameters: {
-        type: "object",
-        properties: { path: { type: "string" } },
-        required: ["path"],
-      },
+      description: "Read a file at the PR's head commit — config (scripts/compliance/config.mjs, controls.mjs), the changed files, the analytics sanitiser/seam, services wiring, api/ handlers, docs/15 — whatever you need to judge the data flows.",
+      parameters: { type: "object", properties: { path: { type: "string" } }, required: ["path"] },
     },
   },
   {
@@ -154,19 +108,14 @@ const TOOLS: OpenAI.Chat.Completions.ChatCompletionTool[] = [
     function: {
       name: "list_directory",
       description: "List a directory at the PR head ('' or '.' for root).",
-      parameters: {
-        type: "object",
-        properties: { path: { type: "string" } },
-        required: ["path"],
-      },
+      parameters: { type: "object", properties: { path: { type: "string" } }, required: ["path"] },
     },
   },
   {
     type: "function",
     function: {
       name: "submit_audit",
-      description:
-        "Submit your final privacy & compliance audit. Call exactly once.",
+      description: "Submit your final privacy & compliance audit. Call exactly once.",
       parameters: AUDIT_SCHEMA as unknown as Record<string, unknown>,
     },
   },
@@ -185,31 +134,15 @@ You are given the deterministic compliance gate's results (scripts/compliance) a
 Use read_file / list_directory to inspect the relevant code and config before judging. Be specific and cite the standard clause when you can. Prefer precision: a clean change should return verdict "pass" with an empty or near-empty risks list. Reserve "fail" for a genuine likely breach. When done, call submit_audit.`;
 
 function groundingFrom(reportJson: string | null): string {
-  if (!reportJson)
-    return "(deterministic gate report unavailable — audit from the diff and code alone)";
+  if (!reportJson) return "(deterministic gate report unavailable — audit from the diff and code alone)";
   try {
     const d = JSON.parse(reportJson) as {
-      score: number;
-      band: string;
-      pass: boolean;
-      kpis: Record<string, number>;
-      findings: {
-        file: string;
-        line: number;
-        rule: string;
-        severity: string;
-        message: string;
-      }[];
+      score: number; band: string; pass: boolean; kpis: Record<string, number>;
+      findings: { file: string; line: number; rule: string; severity: string; message: string }[];
       controls: { id: string; title: string; status: string }[];
     };
-    const findings = d.findings
-      .map(
-        (f) => `- [${f.severity}] ${f.file}:${f.line} ${f.rule} — ${f.message}`,
-      )
-      .join("\n");
-    const controls = d.controls
-      .map((c) => `- ${c.id} (${c.status}): ${c.title}`)
-      .join("\n");
+    const findings = d.findings.map((f) => `- [${f.severity}] ${f.file}:${f.line} ${f.rule} — ${f.message}`).join("\n");
+    const controls = d.controls.map((c) => `- ${c.id} (${c.status}): ${c.title}`).join("\n");
     return [
       `Gate verdict: ${d.pass ? "PASS" : "FAIL"} · score ${d.score}/100 (${d.band}).`,
       `KPIs: ${JSON.stringify(d.kpis)}`,
@@ -226,13 +159,7 @@ function groundingFrom(reportJson: string | null): string {
 }
 
 const VALID_VERDICTS: AuditResult["verdict"][] = ["pass", "concerns", "fail"];
-const VALID_RISK_SEVERITIES: RiskSeverity[] = [
-  "blocker",
-  "high",
-  "medium",
-  "low",
-  "info",
-];
+const VALID_RISK_SEVERITIES: RiskSeverity[] = ["blocker", "high", "medium", "low", "info"];
 
 /** Coerce a model's submit_audit payload into a well-formed AuditResult. Cross-provider
  *  models vary in how strictly they follow the schema, so defend every field. */
@@ -247,9 +174,7 @@ function normalizeResult(raw: unknown): AuditResult {
     const r = (item ?? {}) as Record<string, unknown>;
     if (!r.title) continue;
     risks.push({
-      severity: VALID_RISK_SEVERITIES.includes(r.severity as RiskSeverity)
-        ? (r.severity as RiskSeverity)
-        : "info",
+      severity: VALID_RISK_SEVERITIES.includes(r.severity as RiskSeverity) ? (r.severity as RiskSeverity) : "info",
       area: String(r.area ?? "general"),
       title: String(r.title),
       detail: String(r.detail ?? ""),
@@ -257,11 +182,7 @@ function normalizeResult(raw: unknown): AuditResult {
       standards: String(r.standards ?? ""),
     });
   }
-  return {
-    verdict,
-    summary: typeof obj.summary === "string" ? obj.summary : "",
-    risks,
-  };
+  return { verdict, summary: typeof obj.summary === "string" ? obj.summary : "", risks };
 }
 
 async function audit(
@@ -272,10 +193,7 @@ async function audit(
   headSha: string,
   grounding: string,
 ): Promise<{ result: AuditResult; usage: Usage; turns: number }> {
-  const [docs, tree] = await Promise.all([
-    guidelineDocs(headSha),
-    fileTree(headSha),
-  ]);
+  const [docs, tree] = await Promise.all([guidelineDocs(headSha), fileTree(headSha)]);
   const initial = [
     `Pull request: ${prTitle}`,
     "",
@@ -304,12 +222,7 @@ async function audit(
     { role: "system", content: SYSTEM },
     { role: "user", content: initial },
   ];
-  const usage: Usage = {
-    input_tokens: 0,
-    output_tokens: 0,
-    cache_creation_input_tokens: 0,
-    cache_read_input_tokens: 0,
-  };
+  const usage: Usage = { input_tokens: 0, output_tokens: 0, cache_creation_input_tokens: 0, cache_read_input_tokens: 0 };
   let reads = 0;
 
   for (let turn = 0; turn < MAX_TURNS; turn++) {
@@ -319,9 +232,7 @@ async function audit(
       max_tokens: 16000,
       messages,
       tools: TOOLS,
-      tool_choice: force
-        ? { type: "function", function: { name: "submit_audit" } }
-        : "auto",
+      tool_choice: force ? { type: "function", function: { name: "submit_audit" } } : "auto",
     });
 
     usage.input_tokens += resp.usage?.prompt_tokens ?? 0;
@@ -329,8 +240,7 @@ async function audit(
 
     const msg = resp.choices[0]?.message;
     if (!msg) throw new Error(`${model.label}: empty response from the model.`);
-    if (msg.refusal)
-      throw new Error(`${model.label} declined to audit this PR.`);
+    if (msg.refusal) throw new Error(`${model.label} declined to audit this PR.`);
     messages.push(msg as OpenAI.Chat.Completions.ChatCompletionMessageParam);
 
     const calls = msg.tool_calls ?? [];
@@ -352,11 +262,7 @@ async function audit(
 
       if (name === "submit_audit") {
         submitted = normalizeResult(args);
-        messages.push({
-          role: "tool",
-          tool_call_id: call.id,
-          content: "Audit received.",
-        });
+        messages.push({ role: "tool", tool_call_id: call.id, content: "Audit received." });
         continue;
       }
 
@@ -364,10 +270,7 @@ async function audit(
       let out: string;
       try {
         if (name === "read_file") {
-          out =
-            ++reads > MAX_READS
-              ? "Read budget exhausted — call submit_audit."
-              : await readFile(path, headSha);
+          out = ++reads > MAX_READS ? "Read budget exhausted — call submit_audit." : await readFile(path, headSha);
         } else if (name === "list_directory") {
           out = await listDir(path, headSha);
         } else {
@@ -381,9 +284,7 @@ async function audit(
 
     if (submitted) return { result: submitted, usage, turns: turn + 1 };
   }
-  throw new Error(
-    `${model.label}: audit did not converge — the model never called submit_audit.`,
-  );
+  throw new Error(`${model.label}: audit did not converge — the model never called submit_audit.`);
 }
 
 const VERDICT = {
@@ -393,32 +294,14 @@ const VERDICT = {
 };
 
 async function upsert(prNumber: number, body: string): Promise<void> {
-  const existing = await octokit.paginate(octokit.rest.issues.listComments, {
-    owner,
-    repo,
-    issue_number: prNumber,
-    per_page: 100,
-  });
+  const existing = await octokit.paginate(octokit.rest.issues.listComments, { owner, repo, issue_number: prNumber, per_page: 100 });
   const mine = existing.find((c) => (c.body ?? "").includes(MARKER));
-  if (mine)
-    await octokit.rest.issues.updateComment({
-      owner,
-      repo,
-      comment_id: mine.id,
-      body,
-    });
-  else
-    await octokit.rest.issues.createComment({
-      owner,
-      repo,
-      issue_number: prNumber,
-      body,
-    });
+  if (mine) await octokit.rest.issues.updateComment({ owner, repo, comment_id: mine.id, body });
+  else await octokit.rest.issues.createComment({ owner, repo, issue_number: prNumber, body });
 }
 
 async function run(): Promise<void> {
-  const prNumber =
-    context.payload.issue?.number ?? context.payload.pull_request?.number;
+  const prNumber = context.payload.issue?.number ?? context.payload.pull_request?.number;
   if (!prNumber) {
     core.info("No pull request in context; nothing to audit.");
     return;
@@ -426,55 +309,28 @@ async function run(): Promise<void> {
 
   const model = resolveModel(context.payload.comment?.body ?? "/compliance");
   core.info(`Auditing with: ${model.label} (${model.slug})`);
-  const { data: pr } = await octokit.rest.pulls.get({
-    owner,
-    repo,
-    pull_number: prNumber,
-  });
-  const files = await octokit.paginate(octokit.rest.pulls.listFiles, {
-    owner,
-    repo,
-    pull_number: prNumber,
-    per_page: 100,
-  });
+  const { data: pr } = await octokit.rest.pulls.get({ owner, repo, pull_number: prNumber });
+  const files = await octokit.paginate(octokit.rest.pulls.listFiles, { owner, repo, pull_number: prNumber, per_page: 100 });
   const reviewable = files.filter((f) => f.patch && f.status !== "removed");
   if (reviewable.length === 0) {
     core.info("No textual changes to audit.");
     return;
   }
   const diffText = reviewable
-    .map(
-      (f) =>
-        `### File: ${f.filename} (${f.status}, +${f.additions} -${f.deletions})\n${f.patch}`,
-    )
+    .map((f) => `### File: ${f.filename} (${f.status}, +${f.additions} -${f.deletions})\n${f.patch}`)
     .join("\n\n");
 
   let grounding: string;
   try {
     const { readFile: rf } = await import("node:fs/promises");
-    grounding = groundingFrom(
-      await rf(
-        process.env.COMPLIANCE_REPORT ?? ".compliance/compliance.json",
-        "utf8",
-      ),
-    );
+    grounding = groundingFrom(await rf(process.env.COMPLIANCE_REPORT ?? ".compliance/compliance.json", "utf8"));
   } catch {
     grounding = groundingFrom(null);
   }
 
-  const { result, usage, turns } = await audit(
-    model,
-    pr.title,
-    pr.body ?? "",
-    diffText,
-    pr.head.sha,
-    grounding,
-  );
+  const { result, usage, turns } = await audit(model, pr.title, pr.body ?? "", diffText, pr.head.sha, grounding);
 
-  const counts = result.risks.reduce(
-    (a, r) => ((a[r.severity] = (a[r.severity] ?? 0) + 1), a),
-    {} as Record<string, number>,
-  );
+  const counts = result.risks.reduce((a, r) => ((a[r.severity] = (a[r.severity] ?? 0) + 1), a), {} as Record<string, number>);
   const parts = [
     MARKER,
     "## 🔐 Privacy & Compliance audit",
@@ -497,17 +353,10 @@ async function run(): Promise<void> {
       ...(r.standards ? [`**Standards:** ${r.standards}`] : []),
     );
   }
-  parts.push(
-    "",
-    costTable("💰 Audit cost", usage, turns, model),
-    "",
-    `<sub>Audited by \`${model.slug}\` via OpenRouter, grounded on \`scripts/compliance\`. See \`docs/15-compliance-and-certification.md\`.</sub>`,
-  );
+  parts.push("", costTable("💰 Audit cost", usage, turns, model), "", `<sub>Audited by \`${model.slug}\` via OpenRouter, grounded on \`scripts/compliance\`. See \`docs/15-compliance-and-certification.md\`.</sub>`);
 
   await upsert(prNumber, parts.join("\n"));
-  core.info(
-    `Posted compliance audit (verdict: ${result.verdict}, ${result.risks.length} risk(s)).`,
-  );
+  core.info(`Posted compliance audit (verdict: ${result.verdict}, ${result.risks.length} risk(s)).`);
 }
 
 run().catch((err) => {

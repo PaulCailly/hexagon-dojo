@@ -28,20 +28,10 @@ export async function upsertComment(
   });
   const mine = existing.find((c) => (c.body ?? "").includes(marker));
   if (mine) {
-    await octokit.rest.issues.updateComment({
-      owner,
-      repo,
-      comment_id: mine.id,
-      body,
-    });
+    await octokit.rest.issues.updateComment({ owner, repo, comment_id: mine.id, body });
     core.info(`Updated ${label} comment ${mine.id}.`);
   } else {
-    await octokit.rest.issues.createComment({
-      owner,
-      repo,
-      issue_number: prNumber,
-      body,
-    });
+    await octokit.rest.issues.createComment({ owner, repo, issue_number: prNumber, body });
     core.info(`Posted ${label} comment.`);
   }
 }
