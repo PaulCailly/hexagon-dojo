@@ -78,7 +78,7 @@ export default function App() {
               }
             >
               {mod.label}
-              <span className="ml-1.5 text-xs text-slate-500 font-mono">
+              <span className="ml-1.5 text-xs text-slate-400 font-mono">
                 {mod.sub}
               </span>
             </NavLink>
