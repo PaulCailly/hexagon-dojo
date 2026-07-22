@@ -1,0 +1,247 @@
+{
+  "$schema": "https://paulcailly.github.io/gatekit/schema.json",
+  "version": "0.6.7",
+  "packageManager": "npm",
+  "paths": {
+    "scripts": "scripts",
+    "sentinel": ".github/sentinel"
+  },
+  "features": {
+    "quality": {
+      "enabled": true,
+      "mode": "report"
+    },
+    "compliance": {
+      "enabled": true,
+      "mode": "report"
+    },
+    "review": {
+      "enabled": false,
+      "mode": "report"
+    },
+    "debate": {
+      "enabled": false,
+      "mode": "report"
+    },
+    "qa": {
+      "enabled": false,
+      "mode": "report"
+    },
+    "release-notes": {
+      "enabled": false,
+      "mode": "report"
+    }
+  },
+  "installed": {
+    ".github/sentinel/src/lib/benchmark.ts": {
+      "sha": "c594848526ac96355cb7e38d8210e367f53876aec3661bd1f8927d75b48b9ca0",
+      "type": "managed",
+      "version": "0.6.7"
+    },
+    ".github/sentinel/src/lib/browser.ts": {
+      "sha": "8526ad4b72f74d6d2177e29579521b86553bb419e013e91e60981a12411324ec",
+      "type": "managed",
+      "version": "0.6.7"
+    },
+    ".github/sentinel/src/lib/debate-core.ts": {
+      "sha": "00811840eea1fe888da8ec8c7479783281b61b0225f44d2219096160d2e36043",
+      "type": "managed",
+      "version": "0.6.7"
+    },
+    ".github/sentinel/src/lib/debate-format.ts": {
+      "sha": "9b1379cc970d1e8be3ae91881a051cf894cb848b1e5dd1b450fb9648190ad5f7",
+      "type": "managed",
+      "version": "0.6.7"
+    },
+    ".github/sentinel/src/lib/diff.ts": {
+      "sha": "72c9ca84e44bf34e2a9c7f45d8ba80d3bc195115fa4173a0edcaa7c28c1e09be",
+      "type": "managed",
+      "version": "0.6.7"
+    },
+    ".github/sentinel/src/lib/gemini.ts": {
+      "sha": "7005542f1ed4e7593b3cb565913ff76c61f111d39c0294726662aa4f5f269dc3",
+      "type": "managed",
+      "version": "0.6.7"
+    },
+    ".github/sentinel/src/lib/gh.ts": {
+      "sha": "553a4f0e94481043be591248e652af47787f06bc5af6dbdd155f1b35d7186ca6",
+      "type": "managed",
+      "version": "0.6.7"
+    },
+    ".github/sentinel/src/lib/markdown.ts": {
+      "sha": "263af99816ff8500de3b8e23b9b8bf60337fe537374898497c95f65aba91e76f",
+      "type": "managed",
+      "version": "0.6.7"
+    },
+    ".github/sentinel/src/lib/metrics.ts": {
+      "sha": "099a9ef39c2dcfa6f2a244d4fa3ea55f5a2a636fe5c2cee240f26c75827814f0",
+      "type": "managed",
+      "version": "0.6.7"
+    },
+    ".github/sentinel/src/lib/openrouter.ts": {
+      "sha": "6c608b155fdf0b25c9010a3660891f10d34ab0e8cd89a033aac4dfceadac6e03",
+      "type": "managed",
+      "version": "0.6.7"
+    },
+    ".github/sentinel/src/lib/qa-auth.ts": {
+      "sha": "dc5bb7cf775cfe8369cfc590f676cf87e26e287d06777845a826e70da85fcd89",
+      "type": "managed",
+      "version": "0.6.7"
+    },
+    ".github/sentinel/src/lib/qa-core.ts": {
+      "sha": "54685b5fee4781959602bfaa4552700224e3ffcfba2fa2158cf994c7cee42ca2",
+      "type": "managed",
+      "version": "0.6.7"
+    },
+    ".github/sentinel/src/lib/qa-memory.ts": {
+      "sha": "fd9871eab46b8d382ced9d82308183576eff422ac0587618dc3bc6b41cf0bfa2",
+      "type": "managed",
+      "version": "0.6.7"
+    },
+    ".github/sentinel/src/lib/reactions.ts": {
+      "sha": "9cfc72d679e94c8633c478883f55acdebb1d5b9e7de3e834cfa8bb37ca07613e",
+      "type": "managed",
+      "version": "0.6.7"
+    },
+    ".github/sentinel/src/lib/recorder.ts": {
+      "sha": "58dfb3cd61717f75e7f9daa66ec582b09ac59055fd08fab2a9f74bcd105bba27",
+      "type": "managed",
+      "version": "0.6.7"
+    },
+    ".github/sentinel/src/lib/release-core.ts": {
+      "sha": "f902ff538726c5bb0cd2d0ffc75f591c9b4d8d3c493409c617806ede52cd8321",
+      "type": "managed",
+      "version": "0.6.7"
+    },
+    ".github/sentinel/src/lib/repo.ts": {
+      "sha": "cf7e5f31aee9a35e5aa0a218dbb1cd89e12381b51282b95463dcb872ff5882e2",
+      "type": "managed",
+      "version": "0.6.7"
+    },
+    ".github/sentinel/src/lib/types.ts": {
+      "sha": "fbdac64fa1f0ecb8146c09571f56d95fe3dead5e3550d58867e86281ef8659b2",
+      "type": "managed",
+      "version": "0.6.7"
+    },
+    ".github/sentinel/src/lib/review-fixes.ts": {
+      "sha": "4fd3bc5fc65322024d1a4232ad08046c8a1cae41aa2eff8ffea261ec33c476a1",
+      "type": "managed",
+      "version": "0.6.7"
+    },
+    ".github/sentinel/package-lock.json": {
+      "sha": "c1886a76a34d7cfb356d6f455196750060fcb1a36d09f6c306d1810f6dff4877",
+      "type": "managed",
+      "version": "0.6.7"
+    },
+    ".github/sentinel/src/lib/stack-detect.ts": {
+      "sha": "26e3c65aab6e9804b6b6f380e6563cf8b0ffbd5dd77d177c34fea635e5e98904",
+      "type": "managed",
+      "version": "0.6.7"
+    },
+    ".github/sentinel/src/lib/qa-config-persist.ts": {
+      "sha": "e8681f3fa7db28495c1dfe18d66414d01b7f8cce2a1a45e2780bb6c32524d261",
+      "type": "managed",
+      "version": "0.6.7"
+    },
+    ".github/sentinel/src/lib/qa-seed.ts": {
+      "sha": "f8ff58fe03bd93ba1073b704004a11c608bfe696ccc0db9d5e69d48491c275dc",
+      "type": "managed",
+      "version": "0.6.7"
+    },
+    ".github/sentinel/package.json": {
+      "sha": "d9f86c7034d6e80b6df31a319bc0ef9d722755ea22e2362eba8933ad6c996349",
+      "type": "managed",
+      "version": "0.6.7"
+    },
+    ".github/sentinel/tsconfig.json": {
+      "sha": "cd1ebe21f981e564faa5a701a8b5c0c6dc1e57af15e47135c985aea3af4268d4",
+      "type": "managed",
+      "version": "0.6.7"
+    },
+    ".github/sentinel/src/lib/qa-map.ts": {
+      "sha": "72bdb0f4240c6bab32a3182d08d24f66107a3e02bfbdc293e6d59592f044c064",
+      "type": "managed",
+      "version": "0.6.7"
+    },
+    ".github/sentinel/src/lib/route-extract.ts": {
+      "sha": "5d0cf25fd0e361127a3535219e6262be66f68fd0db16efec5ab2a48811c2e5d4",
+      "type": "managed",
+      "version": "0.6.7"
+    },
+    ".github/sentinel/src/lib/qa-map.overlay.ts": {
+      "sha": "d7f246c333993b38318bd779986c10120e3d0d74241a8c9417de9fa2b7d74d38",
+      "type": "owned",
+      "version": "0.6.7"
+    },
+    ".github/sentinel/src/lib/qa-map.generated.json": {
+      "sha": "fe03f82b769aaac4c2859585bc026ea700ffd3165f00a886fdd241be00edcef9",
+      "type": "owned",
+      "version": "0.6.7"
+    },
+    "scripts/health/index.mjs": {
+      "sha": "b6149196b2f8bf35c204efc5424e2bbe1f81b9d960b4d9cedd27cefb4eeac724",
+      "type": "managed",
+      "version": "0.6.7"
+    },
+    "scripts/health/analyze.mjs": {
+      "sha": "aebff25373c5dd0c261a6aa1bf986fcd23b6eb63a0d36c07230841aab3d2dbb5",
+      "type": "managed",
+      "version": "0.6.7"
+    },
+    "scripts/health/config.mjs": {
+      "sha": "d5e3435c981a59564566b5dd8eb1792220ccd0a75d9ad5e5a4f8016e4098e12b",
+      "type": "owned",
+      "version": "0.6.7"
+    },
+    ".github/sentinel/src/quality-report.ts": {
+      "sha": "59122c94f9eafa116177ff15973d508770ab437e0777ae577d63b191a64cd8b8",
+      "type": "managed",
+      "version": "0.6.7"
+    },
+    ".github/workflows/quality-gate.yml": {
+      "sha": "e8070dfb7fd65141524b33c7d8c56a34de50467220690dc3acf08396d911c9ce",
+      "type": "managed",
+      "version": "0.6.7"
+    },
+    "scripts/compliance/index.mjs": {
+      "sha": "4f7299774d2dec6cebfec41f15c5dfe044300053624c2b31447eaa3e15c188d6",
+      "type": "managed",
+      "version": "0.6.7"
+    },
+    "scripts/compliance/analyze.mjs": {
+      "sha": "aa2b6441c6516404e6d9254ee2bf9fad06d04d0b2b158a68547357a5f1d7851d",
+      "type": "managed",
+      "version": "0.6.7"
+    },
+    "scripts/compliance/config.mjs": {
+      "sha": "8a6976882b97c2e041dbeae42b5244eb5ec37be9f10d469ad3e87bfbef481d68",
+      "type": "owned",
+      "version": "0.6.7"
+    },
+    "scripts/compliance/controls.mjs": {
+      "sha": "0f261c4371c7280ff48bab608a20f25393557f85e7f128c904ca6ed68841a9c5",
+      "type": "owned",
+      "version": "0.6.7"
+    },
+    ".github/sentinel/src/compliance-report.ts": {
+      "sha": "e064f73e3a1337608be38af50f78f214b499d6b69a2abb8fbe7de2828ac108db",
+      "type": "managed",
+      "version": "0.6.7"
+    },
+    ".github/sentinel/src/compliance-review.ts": {
+      "sha": "3bdaa40277261d9ada7fee6310e6ab4335b735e90bb6e34062a0fa0836b3c937",
+      "type": "managed",
+      "version": "0.6.7"
+    },
+    ".github/workflows/compliance-gate.yml": {
+      "sha": "05c923b34783dc413fc0d92efb028a15f954e59011141976d1dd41a5b52ec965",
+      "type": "managed",
+      "version": "0.6.7"
+    },
+    ".github/workflows/compliance.yml": {
+      "sha": "470d57b326d5ecee60ea5d2e6ec9f34daf09943b5fbd735fc72c794c17ed2e0d",
+      "type": "managed",
+      "version": "0.6.7"
+    }
+  }
+}
