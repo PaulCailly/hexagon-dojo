@@ -1,4 +1,4 @@
-import type { DrillAnswer, DrillItem, TagColor } from "./types";
+import type { DrillAnswer, DrillItem, DrillSet, TagColor } from "./types";
 
 export const DRILL: DrillItem[] = [
   {
@@ -65,3 +65,7 @@ export const DRILL_COLORS: Record<DrillAnswer, TagColor> = {
   "Use case": "violet",
   "Composition root": "emerald",
 };
+
+export const DRILL_SETS: DrillSet[] = [
+  { id: "d1", title: "Reading the Reference Codebase", items: DRILL },
+];

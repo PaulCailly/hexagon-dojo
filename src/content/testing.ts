@@ -58,3 +58,16 @@ describe("redeemReward", () => {
       .rejects.toThrow("Reward unavailable");
   });
 });`;
+
+import type { TestMission } from "./types";
+
+export const TEST_MISSIONS: TestMission[] = [
+  {
+    id: "t1",
+    title: "Mission 1: test redeemReward without mocking anything",
+    brief:
+      "On paper or in your editor, write the test suite for createRedeemRewardUseCase from the guide. Cover the happy path and both error paths. Then grade yourself against the checklist and compare with the model answer.",
+    checklist: TEST_CHECKLIST,
+    solution: TEST_SOLUTION,
+  },
+];

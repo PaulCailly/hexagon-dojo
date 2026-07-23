@@ -367,3 +367,13 @@ export const BOOK: BookChapter[] = [
     ],
   },
 ];
+
+import type { BookPart } from "./types";
+
+// Inclusive chapter-index ranges; updated when chapters are inserted.
+export const BOOK_PARTS: BookPart[] = [
+  { title: "Part I — Foundations", from: 0, to: 6 },
+  { title: "Part II — Testing", from: 7, to: 7 },
+  { title: "Part III — Patterns at the Edge", from: 8, to: 8 },
+  { title: "Part IV — Practice", from: 9, to: 11 },
+];

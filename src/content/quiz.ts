@@ -134,3 +134,9 @@ export const QUIZ: QuizQuestion[] = [
     why: "Inject an in-memory repository seeded with the reward you need, a no-op or recording redemption service, then assert. Instant, deterministic, no mocking framework.",
   },
 ];
+
+import type { QuizSet } from "./types";
+
+export const QUIZ_SETS: QuizSet[] = [
+  { id: "s1", title: "Foundations: Ports and Adapters", questions: QUIZ },
+];

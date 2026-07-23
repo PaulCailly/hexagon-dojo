@@ -36,6 +36,32 @@ export interface TalkCard {
   a: string;
 }
 
+export interface QuizSet {
+  id: string;
+  title: string;
+  questions: QuizQuestion[];
+}
+
+export interface DrillSet {
+  id: string;
+  title: string;
+  items: DrillItem[];
+}
+
+export interface TestMission {
+  id: string;
+  title: string;
+  brief: string;
+  checklist: string[];
+  solution: string;
+}
+
+export interface BookPart {
+  title: string;
+  from: number;
+  to: number;
+}
+
 export type BookBlock =
   | { t: "p"; c: string }
   | { t: "code"; c: string }

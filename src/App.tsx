@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Navigate, NavLink, Route, Routes, useNavigate } from "react-router";
-import { QUIZ } from "./content/quiz";
+import { QUIZ_SETS } from "./content/quiz";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import { Hex } from "./components/Hex";
 import { Tag } from "./components/Tag";
@@ -15,29 +15,36 @@ import TestModule from "./modules/TestModule";
 import CardsModule from "./modules/CardsModule";
 
 const MODULES = [
-  { path: "/book", label: "The Book", sub: "12 chapters" },
+  { path: "/book", label: "The Book", sub: "chapters" },
   { path: "/quiz", label: "Concepts", sub: "QCM" },
   { path: "/review", label: "Code review", sub: "Missions" },
-  { path: "/drill", label: "Classify", sub: "Speed drill" },
-  { path: "/testing", label: "Testing", sub: "Mission" },
+  { path: "/drill", label: "Classify", sub: "Drills" },
+  { path: "/testing", label: "Testing", sub: "Missions" },
   { path: "/cards", label: "Talk tracks", sub: "Flashcards" },
 ];
 
+const QUIZ_TOTAL = QUIZ_SETS.reduce((n, s) => n + s.questions.length, 0);
+const sumBest = (best: Record<string, number>) =>
+  Object.values(best).reduce((a, b) => a + b, 0);
+
 export default function App() {
   const navigate = useNavigate();
-  const [quizBest, setQuizBest] = useState<number | null>(
+  const [quizBest, setQuizBest] = useState<Record<string, number>>(
     () => loadProgress().quizBest,
   );
 
-  const handleQuizBest = (score: number) => {
-    const b = bestScore(loadProgress().quizBest, score);
-    setQuizBest(b);
-    saveProgress({ quizBest: b });
+  const handleQuizBest = (setId: string, score: number) => {
+    const next = {
+      ...loadProgress().quizBest,
+      [setId]: bestScore(loadProgress().quizBest[setId] ?? null, score),
+    };
+    setQuizBest(next);
+    saveProgress({ quizBest: next });
   };
 
   const handleReset = () => {
     resetProgress();
-    setQuizBest(null);
+    setQuizBest({});
     navigate("/book/1");
   };
 
@@ -56,10 +63,10 @@ export default function App() {
               ports, adapters, dependency injection
             </p>
           </div>
-          {quizBest !== null && (
+          {Object.keys(quizBest).length > 0 && (
             <div className="ml-auto">
               <Tag color="cyan">
-                Quiz best: {quizBest}/{QUIZ.length}
+                Quiz best: {sumBest(quizBest)}/{QUIZ_TOTAL}
               </Tag>
             </div>
           )}
@@ -92,12 +99,12 @@ export default function App() {
             <Route path="/" element={<Navigate to="/book" replace />} />
             <Route path="/book/:chapter?" element={<BookModule />} />
             <Route
-              path="/quiz"
+              path="/quiz/:set?"
               element={<QuizModule onBest={handleQuizBest} />}
             />
             <Route path="/review" element={<ReviewModule />} />
-            <Route path="/drill" element={<DrillModule />} />
-            <Route path="/testing" element={<TestModule />} />
+            <Route path="/drill/:set?" element={<DrillModule />} />
+            <Route path="/testing/:mission?" element={<TestModule />} />
             <Route path="/cards" element={<CardsModule />} />
             <Route path="*" element={<Navigate to="/book" replace />} />
           </Routes>

@@ -26,7 +26,7 @@ export default function ReviewModule() {
 
   return (
     <div>
-      <div className="flex items-center gap-2 mb-2">
+      <div className="flex items-center gap-2 mb-2 flex-wrap">
         {REVIEWS.map((_, idx) => (
           <button
             key={idx}
