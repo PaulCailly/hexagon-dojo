@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate, useParams } from "react-router";
-import { BOOK } from "../content/book";
+import { BOOK, BOOK_PARTS } from "../content/book";
 import { Code } from "../components/Code";
 import { Hex } from "../components/Hex";
 import { Tag } from "../components/Tag";
@@ -37,28 +37,40 @@ export default function BookModule() {
 
   return (
     <div>
-      <div className="flex flex-wrap gap-1.5 mb-5">
-        {BOOK.map((c, idx) => (
-          <button
-            key={idx}
-            onClick={() => navigate(`/book/${idx + 1}`)}
-            title={c.title}
-            aria-label={`Chapter ${idx + 1}: ${c.title}`}
-            aria-current={idx === ch ? "page" : undefined}
-            className={`${focusRing} rounded`}
-          >
-            <Hex
-              className={`w-9 h-9 text-xs font-bold transition-colors ${
-                idx === ch
-                  ? "bg-cyan-500 text-slate-950"
-                  : read.has(idx)
-                    ? "bg-emerald-800 text-emerald-200"
-                    : "bg-slate-800 text-slate-400 hover:bg-slate-700"
-              }`}
-            >
-              {idx + 1}
-            </Hex>
-          </button>
+      <div className="mb-5 space-y-2">
+        {BOOK_PARTS.map((part) => (
+          <div key={part.title}>
+            <p className="text-[10px] font-mono uppercase tracking-wider text-slate-400 mb-1">
+              {part.title}
+            </p>
+            <div className="flex flex-wrap gap-1.5">
+              {BOOK.slice(part.from, part.to + 1).map((c, i) => {
+                const idx = part.from + i;
+                return (
+                  <button
+                    key={idx}
+                    onClick={() => navigate(`/book/${idx + 1}`)}
+                    title={c.title}
+                    aria-label={`Chapter ${idx + 1}: ${c.title}`}
+                    aria-current={idx === ch ? "page" : undefined}
+                    className={`${focusRing} rounded`}
+                  >
+                    <Hex
+                      className={`w-9 h-9 text-xs font-bold transition-colors ${
+                        idx === ch
+                          ? "bg-cyan-500 text-slate-950"
+                          : read.has(idx)
+                            ? "bg-emerald-800 text-emerald-200"
+                            : "bg-slate-800 text-slate-400 hover:bg-slate-700"
+                      }`}
+                    >
+                      {idx + 1}
+                    </Hex>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
         ))}
       </div>
 

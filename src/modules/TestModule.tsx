@@ -1,15 +1,27 @@
 import { useState } from "react";
-import { TEST_CHECKLIST, TEST_SOLUTION } from "../content/testing";
+import { useNavigate, useParams } from "react-router";
+import { TEST_MISSIONS } from "../content/testing";
 import { Code } from "../components/Code";
 import { Tag } from "../components/Tag";
 import { focusRing } from "../components/focus";
 import { loadProgress, saveProgress } from "../lib/storage";
 
 export default function TestModule() {
-  const [checks, setChecks] = useState<Set<number>>(
-    () => new Set(loadProgress().testChecklist),
+  const navigate = useNavigate();
+  const { mission: missionId } = useParams();
+  const mission =
+    TEST_MISSIONS.find((m) => m.id === missionId) ?? TEST_MISSIONS[0];
+  const [checklists, setChecklists] = useState<Record<string, Set<number>>>(
+    () => {
+      const stored = loadProgress().testChecklists;
+      return Object.fromEntries(
+        TEST_MISSIONS.map((m) => [m.id, new Set(stored[m.id] ?? [])]),
+      );
+    },
   );
   const [showSolution, setShowSolution] = useState(false);
+
+  const checks = checklists[mission.id];
 
   const toggle = (idx: number) => {
     const next = new Set(checks);
@@ -18,23 +30,42 @@ export default function TestModule() {
     } else {
       next.add(idx);
     }
-    setChecks(next);
-    saveProgress({ testChecklist: [...next] });
+    const all = { ...checklists, [mission.id]: next };
+    setChecklists(all);
+    saveProgress({
+      testChecklists: Object.fromEntries(
+        Object.entries(all).map(([id, s]) => [id, [...s]]),
+      ),
+    });
   };
 
   return (
     <div>
+      <div className="flex items-center gap-2 mb-4 flex-wrap">
+        {TEST_MISSIONS.map((m, idx) => (
+          <button
+            key={m.id}
+            onClick={() => {
+              navigate(`/testing/${m.id}`);
+              setShowSolution(false);
+            }}
+            aria-pressed={m.id === mission.id}
+            className={`px-3 py-1 rounded-full text-xs font-mono border ${focusRing} ${
+              m.id === mission.id
+                ? "bg-emerald-900 border-emerald-600 text-emerald-200"
+                : "bg-slate-900 border-slate-700 text-slate-400 hover:border-emerald-700"
+            }`}
+          >
+            Mission {idx + 1}
+          </button>
+        ))}
+      </div>
       <h3 className="text-lg font-semibold text-slate-100 mb-1">
-        Mission: test redeemReward without mocking anything
+        {mission.title}
       </h3>
-      <p className="text-sm text-slate-400 mb-4">
-        On paper or in your editor, write the test suite for
-        createRedeemRewardUseCase from the guide. Cover the happy path and both
-        error paths. Then grade yourself against the checklist and compare with
-        the model answer.
-      </p>
+      <p className="text-sm text-slate-400 mb-4">{mission.brief}</p>
       <div className="space-y-2 mb-4">
-        {TEST_CHECKLIST.map((c, idx) => (
+        {mission.checklist.map((c, idx) => (
           <button
             key={idx}
             onClick={() => toggle(idx)}
@@ -52,8 +83,10 @@ export default function TestModule() {
           </button>
         ))}
       </div>
-      <Tag color={checks.size === TEST_CHECKLIST.length ? "emerald" : "slate"}>
-        {checks.size} / {TEST_CHECKLIST.length} checklist items
+      <Tag
+        color={checks.size === mission.checklist.length ? "emerald" : "slate"}
+      >
+        {checks.size} / {mission.checklist.length} checklist items
       </Tag>
       <div className="mt-4">
         <button
@@ -65,11 +98,10 @@ export default function TestModule() {
         </button>
         {showSolution && (
           <div className="mt-4">
-            <Code>{TEST_SOLUTION}</Code>
+            <Code>{mission.solution}</Code>
             <p className="text-sm text-slate-400 mt-3">
-              The recording adapter is the detail worth mentioning out loud: it
-              is a hand-rolled spy, which proves you do not need a mocking
-              library once the boundary is real.
+              The hand-rolled test infrastructure is the detail worth mentioning
+              out loud: once the boundary is real, no mocking library is needed.
             </p>
           </div>
         )}
