@@ -83,7 +83,9 @@ export default function TestModule() {
           </button>
         ))}
       </div>
-      <Tag color={checks.size === mission.checklist.length ? "emerald" : "slate"}>
+      <Tag
+        color={checks.size === mission.checklist.length ? "emerald" : "slate"}
+      >
         {checks.size} / {mission.checklist.length} checklist items
       </Tag>
       <div className="mt-4">
@@ -98,9 +100,8 @@ export default function TestModule() {
           <div className="mt-4">
             <Code>{mission.solution}</Code>
             <p className="text-sm text-slate-400 mt-3">
-              The hand-rolled test infrastructure is the detail worth
-              mentioning out loud: once the boundary is real, no mocking
-              library is needed.
+              The hand-rolled test infrastructure is the detail worth mentioning
+              out loud: once the boundary is real, no mocking library is needed.
             </p>
           </div>
         )}

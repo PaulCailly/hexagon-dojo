@@ -10,12 +10,12 @@ Hexagon Dojo turns the ports & adapters pattern into a training loop: read the t
 
 ## Modules
 
-- **The Book** — 12 chapters from "Why Boundaries Exist" to interview phrasing, with per-chapter deep links and read tracking
-- **Concepts** — 12-question quiz with per-answer explanations and a persistent best score
-- **Code review** — 2 missions: spot the real problems in a PR, then compare with the fixed code
-- **Classify** — 10-item speed drill: Port / Adapter / Use case / Composition root
-- **Testing** — write a mock-free test suite, self-grade against a checklist and model answer
-- **Talk tracks** — filterable flashcards: system design, product mindset, AI collaboration, English phrasing
+- **The Book** — 20 chapters in 4 parts (Foundations · Testing · Patterns at the Edge · Practice), from "Why Boundaries Exist" through unit/integration testing, contract tests, TDD, error contracts, the delivery edge, events and legacy refactoring — with per-chapter deep links and read tracking
+- **Concepts** — 120 quiz questions in 10 themed sets with per-answer explanations and per-set best scores
+- **Code review** — 10 missions: spot the real problems in a flawed PR (service locators, god ports, mock-everything suites, leaky handlers…), then compare with the fixed code
+- **Classify** — 5 speed drills, 57 lines of code to classify: Port / Adapter / Use case / Composition root
+- **Testing** — 5 missions: unit, integration, contract suites, decorator testing with a fake clock, outside-in TDD — self-graded against checklists and model answers
+- **Talk tracks** — 36 filterable flashcards: system design, testing strategy, product mindset, AI collaboration, English phrasing, codebase reading
 
 ## Stack
 

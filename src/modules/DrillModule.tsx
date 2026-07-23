@@ -106,7 +106,9 @@ function SetRunner({ set }: { set: DrillSet }) {
             {score}/{set.items.length}
           </span>
         </Hex>
-        <p className="text-slate-300">{drillVerdict(score, set.items.length)}</p>
+        <p className="text-slate-300">
+          {drillVerdict(score, set.items.length)}
+        </p>
         <div className="flex items-center justify-center gap-3 mt-4">
           <button
             onClick={() => {
